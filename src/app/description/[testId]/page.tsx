@@ -1,39 +1,24 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
-import { Button } from '@/shared/ui/Button';
+import {useRouter, useParams} from 'next/navigation';
+import {Button} from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
+import {UiTextArea} from "@/shared/ui/ui-textarea";
 
 
 // Данные о тренажерах с описаниями
 const TRAINERS_INFO = {
-    "1" : {
+    "1": {
         title: 'Определение темперамента по И.П. Павлову',
         description:
             'Данный сервис предназначен для обучения студентов определению темперамента человека по классификации И.П. Павлова, основанной на 4-х типах высшей нервной деятельности:',
-        types: ['Флегматик', 'Сангвиник', 'Холерик', 'Меланхолик'],
-        instructions: [
-            'Вам будет выдано задание, содержащее описание поведения человека.',
-            'Необходимо определить тип темперамента человека по классификации И.П. Павлова в зависимости от проявления личностных качеств в его поведении.',
-            'Необходимо выявить характеристики разных видов темперамента: сила, уравновешенность и подвижность нервной системы.',
-            'Задание может содержать недостаточные и избыточные сведения.',
-            'В случае, если вам потребуется подсказки, вы можете воспользоваться чат-ботом, однако излишнее обращение к нему нежелательно.',
-        ],
-        note: 'Оценка выставляется по последней попытке в режиме "Контроль", данные в режиме "Обучение" не учитываются.',
         trainingRoute: '/first-train-task',
         controlRoute: '/task',
     },
-    "2" : {
+    "2": {
         title: 'Работа с экономическими задачами',
         description:
             'Данный сервис предназначен для тестирования студентов по проблемам решения экономических задач.',
-        types: [],
-        instructions: [
-            'Вам будет выдано задание по экономике.',
-            'Необходимо применить методы теории решения изобретательских задач.',
-            'Задание может содержать недостаточные и избыточные сведения.',
-        ],
-        note: 'Оценка выставляется по последней попытке в режиме "Контроль".',
         trainingRoute: '/first-train-task-triz',
         controlRoute: '/task-triz',
     },
@@ -90,39 +75,7 @@ export default function DescriptionPage() {
             {/* Main Content */}
             <main className="container mx-auto px-6 py-12 max-w-5xl">
                 {/* Description Card */}
-                <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-slate-200">
-                    <p className="text-slate-700 text-lg leading-relaxed mb-4">
-                        {trainerInfo.description}
-                    </p>
-
-                    {/* Types List (if available) */}
-                    {trainerInfo.types.length > 0 && (
-                        <ul className="space-y-2 mb-6">
-                            {trainerInfo.types.map((type, index) => (
-                                <li key={index} className="text-slate-700 text-lg">
-                                    <span className="font-semibold">{index + 1}.</span>
-                                    <span className="ml-4">{type}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    {/* Instructions */}
-                    <div className="space-y-4 mt-6">
-                        {trainerInfo.instructions.map((instruction, index) => (
-                            <p key={index} className="text-slate-700 leading-relaxed">
-                                {instruction}
-                            </p>
-                        ))}
-                    </div>
-
-                    {/* Note */}
-                    {trainerInfo.note && (
-                        <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-600 rounded">
-                            <p className="text-slate-700 font-medium">{trainerInfo.note}</p>
-                        </div>
-                    )}
-                </div>
+                <UiTextArea children={trainerInfo.description}/>
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
