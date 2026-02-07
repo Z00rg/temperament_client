@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
+import {UiHeader} from "@/shared/ui/ui-header";
 
 // Типы данных
 interface Question {
@@ -519,50 +520,7 @@ export default function TaskPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
             {/* Header */}
-            <header className="bg-white shadow-md border-b border-slate-200">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-                                    <span className="text-white font-bold text-xl">СамГМУ</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <h1 className="text-xl font-bold text-slate-800">
-                                        {MOCK_TASK.categoryTitle}
-                                    </h1>
-                                    <p className="text-sm text-slate-500">
-                                        Самарский государственный медицинский университет
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-6">
-                            <div className="flex flex-col items-end">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-slate-600">Студент:</span>
-                                    <span className="font-semibold text-slate-800">
-                    {MOCK_USER.fio}
-                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-slate-600">Группа:</span>
-                                    <span className="font-semibold text-slate-800">
-                    {MOCK_USER.group}
-                  </span>
-                                </div>
-                            </div>
-                            <Button
-                                onPress={handleLogout}
-                                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
-                            >
-                                Выход
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <UiHeader/>
 
             {/* Main Content */}
             <main className="container mx-auto px-6 py-8">
