@@ -1,3 +1,5 @@
+'use client'
+
 import {useSignOut} from "../model/use-sign-out";
 import {Button} from "@/shared/ui/Button";
 
