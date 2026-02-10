@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useMemo} from 'react';
+import { useState, useMemo } from 'react';
 import AdminLayout from '@/shared/layouts/AdminLayout';
 
 // Типы данных
@@ -10,6 +10,7 @@ interface Attempt {
     endTime: string;
     spentTime: string;
     estimation: string;
+    taskCategory: string; // ID категории задания
 }
 
 interface Student {
@@ -26,9 +27,9 @@ interface TaskCategory {
 
 // Тестовые данные категорий заданий
 const MOCK_CATEGORIES: TaskCategory[] = [
-    {id: 'all', name: 'Все задания'},
-    {id: 'temperament', name: 'Определение темперамента'},
-    {id: 'economic', name: 'Экономические задачи'},
+    { id: 'all', name: 'Все задания' },
+    { id: 'temperament', name: 'Определение темперамента' },
+    { id: 'economic', name: 'Экономические задачи' },
 ];
 
 // Тестовые данные студентов
@@ -44,6 +45,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-01 10:38:45',
                 spentTime: '08:45',
                 estimation: 'Хорошо',
+                taskCategory: 'temperament',
             },
             {
                 id: 'a2',
@@ -51,6 +53,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-02 14:31:15',
                 spentTime: '11:15',
                 estimation: 'Отлично',
+                taskCategory: 'temperament',
             },
             {
                 id: 'a3',
@@ -58,6 +61,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-03 09:27:30',
                 spentTime: '12:30',
                 estimation: 'Удовлетворительно',
+                taskCategory: 'economic',
             },
         ],
     },
@@ -72,6 +76,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-01 11:12:30',
                 spentTime: '12:30',
                 estimation: 'Отлично',
+                taskCategory: 'economic',
             },
         ],
     },
@@ -86,6 +91,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-02 10:09:20',
                 spentTime: '09:20',
                 estimation: 'Хорошо',
+                taskCategory: 'temperament',
             },
             {
                 id: 'a6',
@@ -93,6 +99,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-03 15:45:10',
                 spentTime: '15:10',
                 estimation: 'Неудовлетворительно',
+                taskCategory: 'temperament',
             },
         ],
     },
@@ -107,6 +114,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-01 16:08:45',
                 spentTime: '08:45',
                 estimation: 'Отлично',
+                taskCategory: 'economic',
             },
             {
                 id: 'a8',
@@ -114,6 +122,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-02 13:11:20',
                 spentTime: '11:20',
                 estimation: 'Отлично',
+                taskCategory: 'economic',
             },
             {
                 id: 'a9',
@@ -121,6 +130,7 @@ const MOCK_STUDENTS: Student[] = [
                 endTime: '2025-02-04 10:39:15',
                 spentTime: '09:15',
                 estimation: 'Хорошо',
+                taskCategory: 'temperament',
             },
         ],
     },
@@ -150,9 +160,21 @@ export default function StatementsPage() {
                 ? student.fio.toUpperCase().includes(studentFilter.toUpperCase())
                 : true;
 
-            return matchesGroup && matchesStudent;
+            // Фильтр по типу задания - проверяем последнюю попытку
+            let matchesCategory = true;
+            if (categoryFilter !== 'all') {
+                const latestAttempt =
+                    student.attempts.length > 0
+                        ? student.attempts[student.attempts.length - 1]
+                        : null;
+                matchesCategory = latestAttempt
+                    ? latestAttempt.taskCategory === categoryFilter
+                    : false;
+            }
+
+            return matchesGroup && matchesStudent && matchesCategory;
         });
-    }, [groupFilter, studentFilter]);
+    }, [groupFilter, studentFilter, categoryFilter]);
 
     // Пагинация
     const totalPages = Math.ceil(filteredStudents.length / rowsPerPage);
@@ -202,6 +224,12 @@ export default function StatementsPage() {
             default:
                 return 'text-slate-600';
         }
+    };
+
+    // Получение названия категории
+    const getCategoryName = (categoryId: string) => {
+        const category = MOCK_CATEGORIES.find((c) => c.id === categoryId);
+        return category?.name || categoryId;
     };
 
     return (
@@ -273,6 +301,9 @@ export default function StatementsPage() {
                                 Группа
                             </th>
                             <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
+                                Тип задания
+                            </th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
                                 Время начала
                             </th>
                             <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
@@ -293,7 +324,7 @@ export default function StatementsPage() {
                         {paginatedStudents.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={8}
+                                    colSpan={9}
                                     className="px-4 py-8 text-center text-slate-500"
                                 >
                                     Нет данных
@@ -321,6 +352,15 @@ export default function StatementsPage() {
                                         <td className="px-4 py-3 text-center text-slate-700">
                                             {student.group}
                                         </td>
+                                        <td className="px-4 py-3 text-center text-slate-700">
+                                            {latestAttempt ? (
+                                                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {getCategoryName(latestAttempt.taskCategory)}
+                          </span>
+                                            ) : (
+                                                <span className="text-slate-400">—</span>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3 text-center text-slate-600 text-sm">
                                             {latestAttempt
                                                 ? formatDate(latestAttempt.startTime)
@@ -337,7 +377,7 @@ export default function StatementsPage() {
                                         <td className="px-4 py-3 text-center">
                                             {displayedAttempts.length > 0 ? (
                                                 <div className="flex items-center justify-center gap-2">
-                                                    {displayedAttempts.map((attempt) => (
+                                                    {displayedAttempts.map((attempt, attemptIndex) => (
                                                         <a
                                                             key={attempt.id}
                                                             href={`/admin/attempt/${attempt.id}`}
