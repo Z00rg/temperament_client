@@ -15,7 +15,7 @@ const overlayStyles = tv({
 });
 
 const modalStyles = tv({
-    base: 'font-sans w-full max-w-[min(90vw,450px)] max-h-[calc(var(--visual-viewport-height)*.9)] rounded-2xl bg-white forced-colors:bg-[Canvas] text-left align-middle text-neutral-700 shadow-2xl bg-clip-padding border border-black/10',
+    base: 'font-sans w-max max-w-[calc(var(--visual-viewport-weight)*.9)] max-h-[calc(var(--visual-viewport-height)*.9)] rounded-2xl bg-white forced-colors:bg-[Canvas] text-left align-middle text-neutral-700 shadow-2xl bg-clip-padding border border-black/10',
     variants: {
         isEntering: {
             true: 'animate-in zoom-in-105 ease-out duration-200'
