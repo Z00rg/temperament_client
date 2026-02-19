@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
 
@@ -133,10 +133,26 @@ const HIGHLIGHT_COLORS: Record<string, string> = {
     pink: 'bg-pink-200',
 };
 
+// Маппинг сложности
+const COMPLEXITY_NAMES: Record<number, string> = {
+    1: 'А+Б-',
+    2: 'А+Б+',
+    3: 'А-Б-',
+    4: 'А-Б+',
+};
+
 export default function TaskPage() {
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
+
     const categoryId = params.categoryId as string; // temperament или economic
+    const mode = searchParams.get('mode') || 'control'; // training или control
+    const complexityParam = searchParams.get('complexity'); // 1, 2, 3, 4
+    const complexity = complexityParam ? parseInt(complexityParam) : null;
+
+    // Определяем режим тренировки
+    const isTrainingMode = mode === 'training';
 
     // State
     const [timeLeft, setTimeLeft] = useState(MOCK_TASK.timeLimit);
@@ -354,7 +370,7 @@ export default function TaskPage() {
         const elements: React.ReactNode[] = [];
         let lastIndex = 0;
 
-        sortedMarkup.forEach((mark, index) => {
+        sortedMarkup.forEach((mark, sortedIndex) => {
             // Добавляем текст до выделения
             if (mark.start > lastIndex) {
                 elements.push(
@@ -383,6 +399,7 @@ export default function TaskPage() {
             const highlightClass = colorClasses[color] || 'bg-gray-200 hover:bg-gray-300';
             const highlightedPart = MOCK_TASK.text.slice(mark.start, mark.end);
 
+            // Находим оригинальный индекс в несортированном массиве
             const originalIndex = textMarkup.findIndex(
                 m => m.start === mark.start && m.end === mark.end && m.category === mark.category
             );
@@ -390,10 +407,10 @@ export default function TaskPage() {
             // Добавляем выделенный текст как React элемент
             elements.push(
                 <mark
-                    key={`mark-${index}`}
+                    key={`mark-${sortedIndex}`}
                     className={`${highlightClass} px-1 py-0.5 rounded group relative cursor-pointer transition-colors`}
                     data-category={mark.category}
-                    data-index={index}
+                    data-index={sortedIndex}
                 >
                     {highlightedPart}
                     <button
@@ -424,8 +441,6 @@ export default function TaskPage() {
 
         return <>{elements}</>;
     }, [textMarkup]);
-
-    // Обработчик клика для удаления выделения (теперь не нужен, встроен в React элементы)
 
     // Выбор вопроса
     const handleQuestionSelect = (questionId: string) => {
@@ -488,6 +503,8 @@ export default function TaskPage() {
         const submissionData = {
             taskId: MOCK_TASK.id,
             categoryId: categoryId,
+            mode: mode, // training или control
+            complexity: complexity, // 1-4 или null
             studentAnswer: selectedAnswer,
             text: MOCK_TASK.text,
             markup: textMarkup,
@@ -503,18 +520,24 @@ export default function TaskPage() {
         console.log('Submitting data:', submissionData);
 
         // TODO: Отправка на бэк
-        // const response = await fetch('/api/task/submit', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(submissionData),
-        // });
-        // const result = await response.json();
+        // if (isTrainingMode) {
+        //   // Режим обучения - не сохраняем оценку
+        //   await fetch('/api/task/submit-training', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(submissionData),
+        //   });
+        // } else {
+        //   // Режим контроля - сохраняем оценку
+        //   await fetch('/api/task/submit-control', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(submissionData),
+        //   });
+        // }
 
-        // Сохраняем в localStorage для страницы результатов
-        // localStorage.setItem('taskSubmission', JSON.stringify(submissionData));
-
-        // Переход на страницу оценки
-        // router.push(`/estimation/${categoryId}`);
+        // Переход на страницу оценки с параметрами
+        router.push(`/estimation/${categoryId}?mode=${mode}${complexity ? `&complexity=${complexity}` : ''}`);
     };
 
     const handleLogout = () => {
@@ -557,6 +580,25 @@ export default function TaskPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Индикатор режима обучения */}
+                {isTrainingMode && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-center gap-3">
+                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            <div>
+                                <div className="font-semibold text-blue-800">Режим обучения</div>
+                                <div className="text-sm text-blue-600">
+                                    Сложность: {complexity ? COMPLEXITY_NAMES[complexity] : 'Не указана'}
+                                    {' • '}
+                                    Результат не сохраняется в ведомость
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Timer */}
                 <div className="text-center mb-6">
