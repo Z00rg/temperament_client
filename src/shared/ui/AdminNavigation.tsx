@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-type AdminTab = 'statements' | 'bank' | 'settings';
+type AdminTab = 'statements' | 'bank';
 
 interface AdminNavigationProps {
     activeTab?: AdminTab;
@@ -18,7 +18,6 @@ export function AdminNavigation({ activeTab }: AdminNavigationProps) {
 
         if (pathname?.includes('/admin/statements')) return 'statements';
         if (pathname?.includes('/admin/bank')) return 'bank';
-        if (pathname?.includes('/admin/settings')) return 'settings';
 
         return 'statements';
     };
@@ -28,7 +27,6 @@ export function AdminNavigation({ activeTab }: AdminNavigationProps) {
     const tabs = [
         { id: 'statements' as AdminTab, label: 'Ведомости', href: '/admin/statements' },
         { id: 'bank' as AdminTab, label: 'Банк заданий', href: '/admin/bank' },
-        { id: 'settings' as AdminTab, label: 'Настройки', href: '/admin/settings' },
     ];
 
     return (

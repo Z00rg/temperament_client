@@ -4,7 +4,7 @@ import { AdminNavigation } from '@/shared/ui/AdminNavigation';
 
 interface AdminLayoutProps {
     children: ReactNode;
-    activeTab?: 'statements' | 'bank' | 'settings';
+    activeTab?: 'statements' | 'bank';
     user?: {
         fio: string;
         role?: string;

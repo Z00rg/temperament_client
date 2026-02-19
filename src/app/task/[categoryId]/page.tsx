@@ -383,6 +383,10 @@ export default function TaskPage() {
             const highlightClass = colorClasses[color] || 'bg-gray-200 hover:bg-gray-300';
             const highlightedPart = MOCK_TASK.text.slice(mark.start, mark.end);
 
+            const originalIndex = textMarkup.findIndex(
+                m => m.start === mark.start && m.end === mark.end && m.category === mark.category
+            );
+
             // Добавляем выделенный текст как React элемент
             elements.push(
                 <mark
@@ -397,7 +401,7 @@ export default function TaskPage() {
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            setTextMarkup((prev) => prev.filter((_, i) => i !== index));
+                            setTextMarkup((prev) => prev.filter((_, i) => i !== originalIndex));
                         }}
                         type="button"
                     >
