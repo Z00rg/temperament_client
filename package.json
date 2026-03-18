@@ -6,14 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "api:generate": "orval"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.4",
     "clsx": "^2.1.1",
     "lucide-react": "^0.563.0",
-    "next": "16.1.6",
+    "next": "^16.1.7",
+    "orval": "^8.5.3",
+    "prettier": "^3.8.1",
     "react": "19.2.3",
     "react-aria-components": "^1.15.1",
     "react-dom": "19.2.3",

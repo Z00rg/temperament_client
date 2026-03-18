@@ -1,0 +1,1016 @@
+openapi: 3.0.3
+info:
+  title: Task System API
+  version: 1.0.0
+  description: API для управления задачами и студентами
+paths:
+  /api/admin/submissions/{id}/:
+    get:
+      operationId: admin_submissions_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - admin
+      responses:
+        '200':
+          description: No response body
+  /api/admin/submissions/all/:
+    get:
+      operationId: admin_submissions_all_retrieve
+      tags:
+        - admin
+      responses:
+        '200':
+          description: No response body
+  /api/answer/{id}/:
+    get:
+      operationId: answer_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - answer
+      responses:
+        '200':
+          description: No response body
+  /api/answer/{id}/delete/:
+    delete:
+      operationId: answer_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - answer
+      responses:
+        '204':
+          description: No response body
+  /api/answer/{id}/update/:
+    put:
+      operationId: answer_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - answer
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: answer_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - answer
+      responses:
+        '200':
+          description: No response body
+  /api/answer/all/:
+    get:
+      operationId: answer_all_retrieve
+      tags:
+        - answer
+      responses:
+        '200':
+          description: No response body
+  /api/answer/create/:
+    post:
+      operationId: answer_create_create
+      tags:
+        - answer
+      responses:
+        '200':
+          description: No response body
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      tags:
+        - auth
+      responses:
+        '200':
+          description: No response body
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+        - auth
+      security:
+        - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/refresh_token/:
+    post:
+      operationId: auth_refresh_token_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookieTokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CookieTokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CookieTokenRefresh'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookieTokenRefresh'
+          description: ''
+  /api/auth/register/admin/:
+    post:
+      operationId: auth_register_admin_create
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminRegistration'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminRegistration'
+          description: ''
+  /api/auth/register/student/:
+    post:
+      operationId: auth_register_student_create
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentRegistration'
+        required: true
+      security:
+        - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRegistration'
+          description: ''
+  /api/category-config/{id}/:
+    get:
+      operationId: category_config_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - category-config
+      responses:
+        '200':
+          description: No response body
+  /api/category-config/{id}/delete/:
+    delete:
+      operationId: category_config_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - category-config
+      responses:
+        '204':
+          description: No response body
+  /api/category-config/{id}/update/:
+    put:
+      operationId: category_config_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - category-config
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: category_config_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - category-config
+      responses:
+        '200':
+          description: No response body
+  /api/category-config/all/:
+    get:
+      operationId: category_config_all_retrieve
+      tags:
+        - category-config
+      responses:
+        '200':
+          description: No response body
+  /api/category-config/create/:
+    post:
+      operationId: category_config_create_create
+      tags:
+        - category-config
+      responses:
+        '200':
+          description: No response body
+  /api/colors/{id}/:
+    get:
+      operationId: colors_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - colors
+      responses:
+        '200':
+          description: No response body
+  /api/colors/{id}/delete/:
+    delete:
+      operationId: colors_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - colors
+      responses:
+        '204':
+          description: No response body
+  /api/colors/{id}/update/:
+    put:
+      operationId: colors_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - colors
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: colors_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - colors
+      responses:
+        '200':
+          description: No response body
+  /api/colors/all/:
+    get:
+      operationId: colors_all_retrieve
+      tags:
+        - colors
+      responses:
+        '200':
+          description: No response body
+  /api/colors/create/:
+    post:
+      operationId: colors_create_create
+      tags:
+        - colors
+      responses:
+        '200':
+          description: No response body
+  /api/complexity/{id}/:
+    get:
+      operationId: complexity_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - complexity
+      responses:
+        '200':
+          description: No response body
+  /api/complexity/{id}/delete/:
+    delete:
+      operationId: complexity_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - complexity
+      responses:
+        '204':
+          description: No response body
+  /api/complexity/{id}/update/:
+    put:
+      operationId: complexity_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - complexity
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: complexity_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - complexity
+      responses:
+        '200':
+          description: No response body
+  /api/complexity/all/:
+    get:
+      operationId: complexity_all_retrieve
+      tags:
+        - complexity
+      responses:
+        '200':
+          description: No response body
+  /api/complexity/create/:
+    post:
+      operationId: complexity_create_create
+      tags:
+        - complexity
+      responses:
+        '200':
+          description: No response body
+  /api/markup/{id}/:
+    get:
+      operationId: markup_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - markup
+      responses:
+        '200':
+          description: No response body
+  /api/markup/{id}/delete/:
+    delete:
+      operationId: markup_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - markup
+      responses:
+        '204':
+          description: No response body
+  /api/markup/{id}/update/:
+    put:
+      operationId: markup_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - markup
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: markup_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - markup
+      responses:
+        '200':
+          description: No response body
+  /api/markup/all/:
+    get:
+      operationId: markup_all_retrieve
+      tags:
+        - markup
+      responses:
+        '200':
+          description: No response body
+  /api/markup/create/:
+    post:
+      operationId: markup_create_create
+      tags:
+        - markup
+      responses:
+        '200':
+          description: No response body
+  /api/question/{id}/:
+    get:
+      operationId: question_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - question
+      responses:
+        '200':
+          description: No response body
+  /api/question/{id}/delete/:
+    delete:
+      operationId: question_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - question
+      responses:
+        '204':
+          description: No response body
+  /api/question/{id}/update/:
+    put:
+      operationId: question_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - question
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: question_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - question
+      responses:
+        '200':
+          description: No response body
+  /api/question/all/:
+    get:
+      operationId: question_all_retrieve
+      tags:
+        - question
+      responses:
+        '200':
+          description: No response body
+  /api/question/create/:
+    post:
+      operationId: question_create_create
+      tags:
+        - question
+      responses:
+        '200':
+          description: No response body
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+        - in: query
+          name: format
+          schema:
+            type: string
+            enum:
+              - json
+              - yaml
+        - in: query
+          name: lang
+          schema:
+            type: string
+            enum:
+              - af
+              - ar
+              - ar-dz
+              - ast
+              - az
+              - be
+              - bg
+              - bn
+              - br
+              - bs
+              - ca
+              - ckb
+              - cs
+              - cy
+              - da
+              - de
+              - dsb
+              - el
+              - en
+              - en-au
+              - en-gb
+              - eo
+              - es
+              - es-ar
+              - es-co
+              - es-mx
+              - es-ni
+              - es-ve
+              - et
+              - eu
+              - fa
+              - fi
+              - fr
+              - fy
+              - ga
+              - gd
+              - gl
+              - he
+              - hi
+              - hr
+              - hsb
+              - hu
+              - hy
+              - ia
+              - id
+              - ig
+              - io
+              - is
+              - it
+              - ja
+              - ka
+              - kab
+              - kk
+              - km
+              - kn
+              - ko
+              - ky
+              - lb
+              - lt
+              - lv
+              - mk
+              - ml
+              - mn
+              - mr
+              - ms
+              - my
+              - nb
+              - ne
+              - nl
+              - nn
+              - os
+              - pa
+              - pl
+              - pt
+              - pt-br
+              - ro
+              - ru
+              - sk
+              - sl
+              - sq
+              - sr
+              - sr-latn
+              - sv
+              - sw
+              - ta
+              - te
+              - tg
+              - th
+              - tk
+              - tr
+              - tt
+              - udm
+              - uk
+              - ur
+              - uz
+              - vi
+              - zh-hans
+              - zh-hant
+      tags:
+        - schema
+      security:
+        - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/submission/{id}/:
+    get:
+      operationId: submission_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - submission
+      responses:
+        '200':
+          description: No response body
+  /api/submission/{id}/delete/:
+    delete:
+      operationId: submission_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - submission
+      responses:
+        '204':
+          description: No response body
+  /api/submission/{id}/update/:
+    put:
+      operationId: submission_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - submission
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: submission_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - submission
+      responses:
+        '200':
+          description: No response body
+  /api/submission/all/:
+    get:
+      operationId: submission_all_retrieve
+      tags:
+        - submission
+      responses:
+        '200':
+          description: No response body
+  /api/submission/create/:
+    post:
+      operationId: submission_create_create
+      tags:
+        - submission
+      responses:
+        '200':
+          description: No response body
+  /api/submissions/control/submit/:
+    post:
+      operationId: submissions_control_submit_create
+      tags:
+        - submissions
+      responses:
+        '200':
+          description: No response body
+  /api/submissions/education/check/:
+    post:
+      operationId: submissions_education_check_create
+      tags:
+        - submissions
+      responses:
+        '200':
+          description: No response body
+  /api/task-category/{id}/:
+    get:
+      operationId: task_category_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task-category
+      responses:
+        '200':
+          description: No response body
+  /api/task-category/{id}/delete/:
+    delete:
+      operationId: task_category_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task-category
+      responses:
+        '204':
+          description: No response body
+  /api/task-category/{id}/update/:
+    put:
+      operationId: task_category_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task-category
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: task_category_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task-category
+      responses:
+        '200':
+          description: No response body
+  /api/task-category/all/:
+    get:
+      operationId: task_category_all_retrieve
+      tags:
+        - task-category
+      responses:
+        '200':
+          description: No response body
+  /api/task-category/create/:
+    post:
+      operationId: task_category_create_create
+      tags:
+        - task-category
+      responses:
+        '200':
+          description: No response body
+  /api/task/{id}/:
+    get:
+      operationId: task_retrieve
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task
+      responses:
+        '200':
+          description: No response body
+  /api/task/{id}/delete/:
+    delete:
+      operationId: task_delete_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task
+      responses:
+        '204':
+          description: No response body
+  /api/task/{id}/update/:
+    put:
+      operationId: task_update_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: task_update_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - task
+      responses:
+        '200':
+          description: No response body
+  /api/task/all/:
+    get:
+      operationId: task_all_retrieve
+      tags:
+        - task
+      responses:
+        '200':
+          description: No response body
+  /api/task/create/:
+    post:
+      operationId: task_create_create
+      tags:
+        - task
+      responses:
+        '200':
+          description: No response body
+  /api/tasks/control/random/:
+    get:
+      operationId: tasks_control_random_retrieve
+      tags:
+        - tasks
+      responses:
+        '200':
+          description: No response body
+  /api/tasks/education/random/:
+    get:
+      operationId: tasks_education_random_retrieve
+      tags:
+        - tasks
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AdminRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        name:
+          type: string
+          title: Имя
+          maxLength: 50
+        surname:
+          type: string
+          title: Фамилия
+          maxLength: 50
+        patronymic:
+          type: string
+          title: Отчество
+          maxLength: 50
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
+        password2:
+          type: string
+          writeOnly: true
+          minLength: 6
+      required:
+        - email
+        - name
+        - password
+        - password2
+        - surname
+    CookieTokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+        - access
+    StudentRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        name:
+          type: string
+          title: Имя
+          maxLength: 50
+        surname:
+          type: string
+          title: Фамилия
+          maxLength: 50
+        patronymic:
+          type: string
+          title: Отчество
+          maxLength: 50
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
+        password2:
+          type: string
+          writeOnly: true
+          minLength: 6
+        group:
+          type: string
+          writeOnly: true
+      required:
+        - email
+        - group
+        - name
+        - password
+        - password2
+        - surname
