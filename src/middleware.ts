@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 // 1. Конфигурация путей
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
-const ADMIN_ROUTE = '/admin-home';
+const ADMIN_ROUTE = '/admin';
 const ACCESS_COOKIE_NAME = 'access';
 const REFRESH_COOKIE_NAME = 'refresh';
 const PERMISSION_COOKIE_NAME = 'user_role';
