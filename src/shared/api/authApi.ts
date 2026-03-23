@@ -16,8 +16,7 @@ export interface SignUpBodyDto {
     name: string;
     surname: string;
     patronymic: string;
-    work: string;
-    position: string;
+    group: string;
     email: string;
     password: string;
     password2: string;
@@ -40,7 +39,7 @@ const signIn = (body: SignInBodyDto, options?: RequestOptions) =>
 const signUp = (body: SignUpBodyDto, options?: RequestOptions) =>
     createInstance<void>(
         {
-            url: "/auth/register/worker/",
+            url: "/auth/register/student/",
             method: "POST",
             data: body,
         },

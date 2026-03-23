@@ -17,8 +17,7 @@ type SignUpFormData = {
   name: string;
   surname: string;
   patronymic: string;
-  work: string;
-  position: string;
+  group: string;
   email: string;
   password: string;
   password2: string;
@@ -68,8 +67,7 @@ export function useSignUpForm() {
       name: "",
       surname: "",
       patronymic: "",
-      work: "",
-      position: "",
+      group: "",
       email: "",
       password: "",
       password2: "",

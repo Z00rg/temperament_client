@@ -30,7 +30,7 @@ export function SignUpForm() {
                 <h1 className="text-2xl font-bold text-gray-800">Регистрация</h1>
                 <div className="flex items-center justify-between">
           <span className="text-base font-medium text-gray-700">
-            {currentStageIndex === 1 && "Личные данные"}
+              {currentStageIndex === 1 && "Личные данные"}
               {currentStageIndex === 2 && "Профессиональные данные"}
               {currentStageIndex === 3 && "Данные для входа"}
           </span>
@@ -85,14 +85,9 @@ export function SignUpForm() {
                     })}
                 >
                     <UiWhiteTextField
-                        label="Место работы/учебы"
-                        placeholder="Например, СОКБ"
-                        inputProps={{...register("work")}}
-                    />
-                    <UiWhiteTextField
-                        label="Должность"
-                        placeholder="Например, врач-гинеколог"
-                        inputProps={{...register("position")}}
+                        label="Группа"
+                        placeholder="Например, 514"
+                        inputProps={{...register("group")}}
                     />
                 </div>
 
