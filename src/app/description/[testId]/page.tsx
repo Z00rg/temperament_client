@@ -8,29 +8,21 @@ import {UiModal} from '@/shared/ui/UiModal';
 
 
 // Данные о тренажерах с описаниями
-const TRAINERS_INFO = {
-    "1": {
-        title: 'Определение темперамента по И.П. Павлову',
-        description:
-            'Данный сервис предназначен для обучения студентов определению темперамента человека по классификации И.П. Павлова, основанной на 4-х типах высшей нервной деятельности:',
-        trainingRoute: '/task',
-        controlRoute: '/task',
-    },
-    "2": {
-        title: 'Работа с экономическими задачами',
-        description:
-            'Данный сервис предназначен для тестирования студентов по проблемам решения экономических задач.',
-        trainingRoute: '/task',
-        controlRoute: '/task',
-    },
+const TRAINER_INFO = {
+    id: '1',
+    button_title: 'Определение темперамента по И.П. Павлову',
+    short_description:
+        'Данный сервис предназначен для обучения студентов определению темперамента человека по классификации И.П. Павлова, основанной на 4-х типах высшей нервной деятельности',
+    detail_description: 'Данный сервис предназначен для обучения студентов определению темперамента человека по классификации И.П. Павлова, основанной на 4-х типах высшей нервной деятельности',
+    category: "1",
 };
 
 // Уровни сложности
 const COMPLEXITY_LEVELS = [
-    { id: 1, name: 'А+Б-', description: 'Достаточная информация, нет лишней', color: 'bg-green-100 hover:bg-green-200 border-green-300' },
-    { id: 2, name: 'А+Б+', description: 'Достаточная информация, есть лишняя', color: 'bg-blue-100 hover:bg-blue-200 border-blue-300' },
-    { id: 3, name: 'А-Б-', description: 'Недостаточная информация, нет лишней', color: 'bg-red-100 hover:bg-red-200 border-red-300' },
-    { id: 4, name: 'А-Б+', description: 'Недостаточная информация, есть лишняя', color: 'bg-yellow-100 hover:bg-yellow-200 border-yellow-300' },
+    { id: 1, name: 'А+Б-', description: 'Достаточная информация, нет лишней', level: 1 },
+    { id: 2, name: 'А+Б+', description: 'Достаточная информация, есть лишняя', level: 2 },
+    { id: 3, name: 'А-Б-', description: 'Недостаточная информация, нет лишней', level: 3 },
+    { id: 4, name: 'А-Б+', description: 'Недостаточная информация, есть лишняя', level: 4 },
 ];
 
 export default function DescriptionPage() {
@@ -39,22 +31,18 @@ export default function DescriptionPage() {
     const testId = params.testId as string;
 
     // Получаем информацию о тренажере по ID
-    const trainerInfo =
-        TRAINERS_INFO[testId as keyof typeof TRAINERS_INFO] || null;
+    const trainerInfo = TRAINER_INFO;
 
     const handleStartTrainingWithComplexity = (complexityId: number, closeModal: () => void) => {
-        if (trainerInfo?.trainingRoute) {
             // Переход на страницу задания с параметрами: mode=training, complexity=1-4
-            router.push(`${trainerInfo.trainingRoute}/${testId}?mode=training&complexity=${complexityId}`);
+            router.push(`/task/${testId}?mode=training&complexity=${complexityId}`);
             closeModal();
-        }
+
     };
 
     const handleStartControl = () => {
-        if (trainerInfo?.controlRoute) {
             // Переход на страницу задания с параметром mode=control
-            router.push(`${trainerInfo.controlRoute}/${testId}?mode=control`);
-        }
+            router.push(`/task/${testId}?mode=control`);
     };
 
     const handleBack = () => {
@@ -87,7 +75,7 @@ export default function DescriptionPage() {
             {/* Main Content */}
             <main className="container mx-auto px-6 py-12 max-w-5xl">
                 {/* Description Card */}
-                <UiTextArea children={trainerInfo.description}/>
+                <UiTextArea children={trainerInfo.detail_description}/>
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -125,7 +113,7 @@ export default function DescriptionPage() {
                                             <button
                                                 key={level.id}
                                                 onClick={() => handleStartTrainingWithComplexity(level.id, close)}
-                                                className={`${level.color} border-2 rounded-xl p-4 text-left transition-all hover:shadow-md`}
+                                                className={`bg-slate-100 hover:bg-slate-200 border-slate-300 border-2 rounded-xl p-4 text-left transition-all hover:shadow-md`}
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div>
