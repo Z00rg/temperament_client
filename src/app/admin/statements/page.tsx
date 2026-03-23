@@ -355,8 +355,8 @@ export default function StatementsPage() {
                                         <td className="px-4 py-3 text-center text-slate-700">
                                             {latestAttempt ? (
                                                 <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                            {getCategoryName(latestAttempt.taskCategory)}
-                          </span>
+                                                    {getCategoryName(latestAttempt.taskCategory)}
+                                                </span>
                                             ) : (
                                                 <span className="text-slate-400">—</span>
                                             )}
@@ -380,7 +380,7 @@ export default function StatementsPage() {
                                                     {displayedAttempts.map((attempt, attemptIndex) => (
                                                         <a
                                                             key={attempt.id}
-                                                            href={`/admin/attempt/${attempt.id}`}
+                                                            href={`/estimation/${attempt.id}`}
                                                             className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                                                         >
                                                             {student.attempts.indexOf(attempt) + 1}
@@ -394,8 +394,8 @@ export default function StatementsPage() {
                                         <td className="px-4 py-3 text-center">
                                             {latestAttempt ? (
                                                 <span className={getGradeColor(latestAttempt.estimation)}>
-                            {latestAttempt.estimation}
-                          </span>
+                                                    {latestAttempt.estimation}
+                                                </span>
                                             ) : (
                                                 <span className="text-slate-400">Нет данных</span>
                                             )}
@@ -437,9 +437,9 @@ export default function StatementsPage() {
                             </button>
 
                             <span className="text-slate-700">
-                Страница <span className="font-semibold">{currentPage}</span> из{' '}
-                                <span className="font-semibold">{totalPages}</span>
-              </span>
+                            Страница <span className="font-semibold">{currentPage}</span> из{' '}
+                                    <span className="font-semibold">{totalPages}</span>
+                            </span>
 
                             <button
                                 onClick={handleNextPage}

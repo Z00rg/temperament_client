@@ -29,7 +29,7 @@ export interface SignUpBodyDto {
 const signIn = (body: SignInBodyDto, options?: RequestOptions) =>
     createInstance<GetTokenDto>(
         {
-            url: "/login/",
+            url: "/auth/login/",
             method: "POST",
             data: body,
         },
@@ -40,7 +40,7 @@ const signIn = (body: SignInBodyDto, options?: RequestOptions) =>
 const signUp = (body: SignUpBodyDto, options?: RequestOptions) =>
     createInstance<void>(
         {
-            url: "/register/worker/",
+            url: "/auth/register/worker/",
             method: "POST",
             data: body,
         },
@@ -51,7 +51,7 @@ const signUp = (body: SignUpBodyDto, options?: RequestOptions) =>
 const signOut = (options?: RequestOptions) =>
     createInstance<void>(
         {
-            url: "/logout/",
+            url: "/auth/logout/",
             method: "POST",
         },
         options

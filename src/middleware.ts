@@ -24,7 +24,7 @@ export default function middleware(request: NextRequest) {
     const isAuthPath = AUTH_ROUTES.some(route => pathname.startsWith(route));
     const isAdminPath = pathname.startsWith(ADMIN_ROUTE);
     const isAdmin = userRoleCookie?.value === "admin";
-    const isWorker = userRoleCookie?.value === "worker";
+    const isWorker = userRoleCookie?.value === "student";
 
     let response: NextResponse;
 
