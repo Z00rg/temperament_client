@@ -377,7 +377,7 @@ export default function StatementsPage() {
                                         <td className="px-4 py-3 text-center">
                                             {displayedAttempts.length > 0 ? (
                                                 <div className="flex items-center justify-center gap-2">
-                                                    {displayedAttempts.map((attempt, attemptIndex) => (
+                                                    {displayedAttempts.map((attempt) => (
                                                         <a
                                                             key={attempt.id}
                                                             href={`/estimation/${attempt.id}`}
