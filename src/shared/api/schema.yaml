@@ -14,14 +14,26 @@ paths:
           type: integer
         required: true
       tags:
+      - Admin
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubmissionDetailResponse'
+          description: ''
   /api/admin/submissions/all/:
     get:
       operationId: admin_submissions_all_retrieve
       tags:
+      - Admin
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkStudentStatementSerializerList'
+          description: ''
   /api/answer/{id}/:
     get:
       operationId: answer_retrieve
@@ -32,8 +44,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Answer
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+          description: ''
   /api/answer/{id}/delete/:
     delete:
       operationId: answer_delete_destroy
@@ -44,7 +62,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Answer
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/answer/{id}/update/:
     put:
       operationId: answer_update_update
@@ -55,8 +80,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Answer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskAnswerAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskAnswerAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskAnswerAdmin'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: answer_update_partial_update
       parameters:
@@ -66,33 +115,123 @@ paths:
           type: integer
         required: true
       tags:
+      - Answer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskAnswerAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskAnswerAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskAnswerAdmin'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/answer/all/:
     get:
       operationId: answer_all_retrieve
       tags:
+      - Answer
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAnswerAdminSerializerList'
+          description: ''
   /api/answer/create/:
     post:
       operationId: answer_create_create
       tags:
+      - Answer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskAnswerAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskAnswerAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskAnswerAdmin'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/auth/login/:
     post:
       operationId: auth_login_create
       tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/auth/logout/:
     post:
       operationId: auth_logout_create
       tags:
+      - Auth
       security:
       - {}
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+          description: ''
   /api/auth/refresh_token/:
     post:
       operationId: auth_refresh_token_create
@@ -100,6 +239,7 @@ paths:
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
       tags:
+      - Auth
       requestBody:
         content:
           application/json:
@@ -122,6 +262,7 @@ paths:
     post:
       operationId: auth_register_admin_create
       tags:
+      - Auth
       requestBody:
         content:
           application/json:
@@ -139,11 +280,19 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/OkAdminRegistration'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/auth/register/student/:
     post:
       operationId: auth_register_student_create
       tags:
+      - Auth
       requestBody:
         content:
           application/json:
@@ -163,6 +312,13 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/OkStudentRegistration'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/category-config/{id}/:
     get:
@@ -174,8 +330,14 @@ paths:
           type: integer
         required: true
       tags:
+      - CategoryConfig
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+          description: ''
   /api/category-config/{id}/delete/:
     delete:
       operationId: category_config_delete_destroy
@@ -186,7 +348,14 @@ paths:
           type: integer
         required: true
       tags:
+      - CategoryConfig
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/category-config/{id}/update/:
     put:
       operationId: category_config_update_update
@@ -197,8 +366,32 @@ paths:
           type: integer
         required: true
       tags:
+      - CategoryConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryConfigCRUD'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryConfigCRUD'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryConfigCRUD'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: category_config_update_partial_update
       parameters:
@@ -208,19 +401,73 @@ paths:
           type: integer
         required: true
       tags:
+      - CategoryConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryConfigCRUD'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryConfigCRUD'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryConfigCRUD'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/category-config/all/:
     get:
       operationId: category_config_all_retrieve
       tags:
+      - CategoryConfig
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryConfigCRUDSerializerList'
+          description: ''
   /api/category-config/create/:
     post:
       operationId: category_config_create_create
       tags:
+      - CategoryConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryConfigCRUD'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryConfigCRUD'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryConfigCRUD'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/colors/{id}/:
     get:
       operationId: colors_retrieve
@@ -231,8 +478,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Colors
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkColorsMarkup'
+          description: ''
   /api/colors/{id}/delete/:
     delete:
       operationId: colors_delete_destroy
@@ -243,7 +496,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Colors
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/colors/{id}/update/:
     put:
       operationId: colors_update_update
@@ -254,8 +514,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Colors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColorsMarkup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ColorsMarkup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ColorsMarkup'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkColorsMarkup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: colors_update_partial_update
       parameters:
@@ -265,19 +549,73 @@ paths:
           type: integer
         required: true
       tags:
+      - Colors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedColorsMarkup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedColorsMarkup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedColorsMarkup'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkColorsMarkup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/colors/all/:
     get:
       operationId: colors_all_retrieve
       tags:
+      - Colors
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkColorsMarkupSerializerList'
+          description: ''
   /api/colors/create/:
     post:
       operationId: colors_create_create
       tags:
+      - Colors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColorsMarkup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ColorsMarkup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ColorsMarkup'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkColorsMarkup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/complexity/{id}/:
     get:
       operationId: complexity_retrieve
@@ -288,8 +626,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Complexity
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskComplexity'
+          description: ''
   /api/complexity/{id}/delete/:
     delete:
       operationId: complexity_delete_destroy
@@ -300,7 +644,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Complexity
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/complexity/{id}/update/:
     put:
       operationId: complexity_update_update
@@ -311,8 +662,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Complexity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskComplexity'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskComplexity'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskComplexity'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskComplexity'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: complexity_update_partial_update
       parameters:
@@ -322,19 +697,73 @@ paths:
           type: integer
         required: true
       tags:
+      - Complexity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskComplexity'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskComplexity'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskComplexity'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskComplexity'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/complexity/all/:
     get:
       operationId: complexity_all_retrieve
       tags:
+      - Complexity
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskComplexitySerializerList'
+          description: ''
   /api/complexity/create/:
     post:
       operationId: complexity_create_create
       tags:
+      - Complexity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskComplexity'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskComplexity'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskComplexity'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskComplexity'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/markup/{id}/:
     get:
       operationId: markup_retrieve
@@ -345,8 +774,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Markup
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryMarkup'
+          description: ''
   /api/markup/{id}/delete/:
     delete:
       operationId: markup_delete_destroy
@@ -357,7 +792,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Markup
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/markup/{id}/update/:
     put:
       operationId: markup_update_update
@@ -368,8 +810,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Markup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryMarkup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryMarkup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryMarkup'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryMarkup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: markup_update_partial_update
       parameters:
@@ -379,19 +845,73 @@ paths:
           type: integer
         required: true
       tags:
+      - Markup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryMarkup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryMarkup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryMarkup'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryMarkup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/markup/all/:
     get:
       operationId: markup_all_retrieve
       tags:
+      - Markup
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryMarkupSerializerList'
+          description: ''
   /api/markup/create/:
     post:
       operationId: markup_create_create
       tags:
+      - Markup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryMarkup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryMarkup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryMarkup'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkCategoryMarkup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/question/{id}/:
     get:
       operationId: question_retrieve
@@ -402,8 +922,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Question
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+          description: ''
   /api/question/{id}/delete/:
     delete:
       operationId: question_delete_destroy
@@ -414,7 +940,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Question
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/question/{id}/update/:
     put:
       operationId: question_update_update
@@ -425,8 +958,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Question
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskQuestionAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskQuestionAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskQuestionAdmin'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: question_update_partial_update
       parameters:
@@ -436,19 +993,73 @@ paths:
           type: integer
         required: true
       tags:
+      - Question
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskQuestionAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskQuestionAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskQuestionAdmin'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/question/all/:
     get:
       operationId: question_all_retrieve
       tags:
+      - Question
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskQuestionAdminSerializerList'
+          description: ''
   /api/question/create/:
     post:
       operationId: question_create_create
       tags:
+      - Question
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskQuestionAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskQuestionAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskQuestionAdmin'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/schema/:
     get:
       operationId: schema_retrieve
@@ -602,8 +1213,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Submission
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkSubmission'
+          description: ''
   /api/submission/{id}/delete/:
     delete:
       operationId: submission_delete_destroy
@@ -614,7 +1231,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Submission
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/submission/{id}/update/:
     put:
       operationId: submission_update_update
@@ -625,8 +1249,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Submission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Submission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Submission'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkSubmission'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: submission_update_partial_update
       parameters:
@@ -636,31 +1284,133 @@ paths:
           type: integer
         required: true
       tags:
+      - Submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSubmission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSubmission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSubmission'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkSubmission'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/submission/all/:
     get:
       operationId: submission_all_retrieve
       tags:
+      - Submission
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkSubmissionSerializerList'
+          description: ''
   /api/submission/create/:
     post:
       operationId: submission_create_create
       tags:
+      - Submission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Submission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Submission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Submission'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkSubmission'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/submissions/control/submit/:
     post:
       operationId: submissions_control_submit_create
       tags:
+      - Control
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlSubmitRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ControlSubmitRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ControlSubmitRequest'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlSubmitResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/submissions/education/check/:
     post:
       operationId: submissions_education_check_create
       tags:
+      - Student
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EducationSubmitRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EducationSubmitRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EducationSubmitRequest'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationSubmitResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/task-category/{id}/:
     get:
       operationId: task_category_retrieve
@@ -671,8 +1421,14 @@ paths:
           type: integer
         required: true
       tags:
+      - TaskCategory
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+          description: ''
   /api/task-category/{id}/delete/:
     delete:
       operationId: task_category_delete_destroy
@@ -683,7 +1439,14 @@ paths:
           type: integer
         required: true
       tags:
+      - TaskCategory
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/task-category/{id}/update/:
     put:
       operationId: task_category_update_update
@@ -694,8 +1457,32 @@ paths:
           type: integer
         required: true
       tags:
+      - TaskCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCategoryCRUD'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskCategoryCRUD'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskCategoryCRUD'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: task_category_update_partial_update
       parameters:
@@ -705,19 +1492,73 @@ paths:
           type: integer
         required: true
       tags:
+      - TaskCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskCategoryCRUD'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskCategoryCRUD'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskCategoryCRUD'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/task-category/all/:
     get:
       operationId: task_category_all_retrieve
       tags:
+      - TaskCategory
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskCategoryCRUDSerializerList'
+          description: ''
   /api/task-category/create/:
     post:
       operationId: task_category_create_create
       tags:
+      - TaskCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCategoryCRUD'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskCategoryCRUD'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskCategoryCRUD'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/task/{id}/:
     get:
       operationId: task_retrieve
@@ -728,8 +1569,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Task
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAdmin'
+          description: ''
   /api/task/{id}/delete/:
     delete:
       operationId: task_delete_destroy
@@ -740,7 +1587,14 @@ paths:
           type: integer
         required: true
       tags:
+      - Task
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
   /api/task/{id}/update/:
     put:
       operationId: task_update_update
@@ -751,8 +1605,32 @@ paths:
           type: integer
         required: true
       tags:
+      - Task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskAdmin'
+        required: true
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
     patch:
       operationId: task_update_partial_update
       parameters:
@@ -762,31 +1640,103 @@ paths:
           type: integer
         required: true
       tags:
+      - Task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTaskAdmin'
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/task/all/:
     get:
       operationId: task_all_retrieve
       tags:
+      - Task
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAdminSerializerList'
+          description: ''
   /api/task/create/:
     post:
       operationId: task_create_create
       tags:
+      - Task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskAdmin'
+        required: true
       responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/tasks/control/random/:
     get:
       operationId: tasks_control_random_retrieve
       tags:
+      - Control
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskStudent'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/tasks/education/random/:
     get:
       operationId: tasks_education_random_retrieve
       tags:
+      - Student
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkTaskStudentSerializerList'
+          description: ''
 components:
   schemas:
     AdminRegistration:
@@ -822,6 +1772,118 @@ components:
       - password
       - password2
       - surname
+    AdminSubmissionDetailResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          type: object
+          additionalProperties: {}
+      required:
+      - data
+      - ok
+    CategoryConfigCRUD:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        button_title:
+          type: string
+          maxLength: 255
+        short_description:
+          type: string
+        detail_description:
+          type: string
+        category:
+          type: integer
+      required:
+      - button_title
+      - category
+      - detail_description
+      - id
+      - short_description
+    CategoryMarkup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        color_markup:
+          type: integer
+        task_category:
+          type: integer
+        style:
+          type: string
+          readOnly: true
+      required:
+      - color_markup
+      - id
+      - name
+      - slug
+      - style
+      - task_category
+    ColorsMarkup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        style:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
+      - style
+    ControlSubmitRequest:
+      type: object
+      properties:
+        task_id:
+          type: integer
+        time_spent:
+          type: string
+        start_time:
+          type: string
+        answer_markup:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        selected_question_ids:
+          type: array
+          items:
+            type: integer
+        student_characteristics:
+          type: object
+          additionalProperties: {}
+        selected_answer_id:
+          type: integer
+      required:
+      - task_id
+      - time_spent
+    ControlSubmitResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          type: object
+          additionalProperties: {}
+      required:
+      - data
+      - ok
     CookieTokenRefresh:
       type: object
       properties:
@@ -830,6 +1892,501 @@ components:
           readOnly: true
       required:
       - access
+    DeletedData:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/DeletedData'
+      required:
+      - data
+      - ok
+    EducationSubmitRequest:
+      type: object
+      properties:
+        task_id:
+          type: integer
+      required:
+      - task_id
+    EducationSubmitResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          type: object
+          additionalProperties: {}
+      required:
+      - data
+      - ok
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+      required:
+      - error
+      - ok
+    LoginData:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - email
+      - password
+    LoginResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/LoginData'
+      required:
+      - data
+      - ok
+    LogoutData:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    LogoutResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/LogoutData'
+      required:
+      - data
+      - ok
+    OkAdminRegistration:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AdminRegistration'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkCategoryConfigCRUD:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CategoryConfigCRUD'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkCategoryConfigCRUDSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryConfigCRUD'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkCategoryMarkup:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CategoryMarkup'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkCategoryMarkupSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryMarkup'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkColorsMarkup:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ColorsMarkup'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkColorsMarkupSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColorsMarkup'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkStudentRegistration:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/StudentRegistration'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkStudentStatementSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentStatement'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkSubmission:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Submission'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkSubmissionSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Submission'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskAdmin:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskAdmin'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskAdminSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskAdmin'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskAnswerAdmin:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskAnswerAdmin'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskAnswerAdminSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskAnswerAdmin'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskCategoryCRUD:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskCategoryCRUD'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskCategoryCRUDSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskCategoryCRUD'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskComplexity:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskComplexity'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskComplexitySerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskComplexity'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskQuestionAdmin:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskQuestionAdmin'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskQuestionAdminSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskQuestionAdmin'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskStudent:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskStudent'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    OkTaskStudentSerializerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskStudent'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
+    PatchedCategoryConfigCRUD:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        button_title:
+          type: string
+          maxLength: 255
+        short_description:
+          type: string
+        detail_description:
+          type: string
+        category:
+          type: integer
+    PatchedCategoryMarkup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        color_markup:
+          type: integer
+        task_category:
+          type: integer
+        style:
+          type: string
+          readOnly: true
+    PatchedColorsMarkup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        style:
+          type: string
+          maxLength: 255
+    PatchedSubmission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        start_time:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        spent_time:
+          type: string
+          nullable: true
+          maxLength: 10
+        answer_markup: {}
+        selected_question_ids: {}
+        student_characteristics: {}
+        selected_answer_id:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        total_score:
+          type: number
+          format: double
+        grade:
+          type: string
+          nullable: true
+          maxLength: 50
+        task:
+          type: integer
+        student:
+          type: integer
+    PatchedTaskAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+        condition:
+          type: string
+        reference_markup: {}
+        correct_characteristics: {}
+        category:
+          type: integer
+        complexity:
+          type: integer
+    PatchedTaskAnswerAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+          maxLength: 255
+        is_correct:
+          type: boolean
+        task:
+          type: integer
+    PatchedTaskCategoryCRUD:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+    PatchedTaskComplexity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        level:
+          type: integer
+          maximum: 32767
+          minimum: 0
+    PatchedTaskQuestionAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+        answer:
+          type: string
+        is_correct:
+          type: boolean
+        task:
+          type: integer
     StudentRegistration:
       type: object
       properties:
@@ -867,3 +2424,199 @@ components:
       - password
       - password2
       - surname
+    StudentStatement:
+      type: object
+      properties:
+        student_fio:
+          type: string
+          readOnly: true
+        group:
+          type: string
+          readOnly: true
+        last_start:
+          type: string
+          readOnly: true
+        last_end:
+          type: string
+          readOnly: true
+        last_spent:
+          type: string
+          readOnly: true
+        last_grade:
+          type: string
+          readOnly: true
+        attempts:
+          type: string
+          readOnly: true
+      required:
+      - attempts
+      - group
+      - last_end
+      - last_grade
+      - last_spent
+      - last_start
+      - student_fio
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        start_time:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        spent_time:
+          type: string
+          nullable: true
+          maxLength: 10
+        answer_markup: {}
+        selected_question_ids: {}
+        student_characteristics: {}
+        selected_answer_id:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        total_score:
+          type: number
+          format: double
+        grade:
+          type: string
+          nullable: true
+          maxLength: 50
+        task:
+          type: integer
+        student:
+          type: integer
+      required:
+      - created_at
+      - id
+      - student
+      - task
+    TaskAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+        condition:
+          type: string
+        reference_markup: {}
+        correct_characteristics: {}
+        category:
+          type: integer
+        complexity:
+          type: integer
+      required:
+      - category
+      - complexity
+      - condition
+      - id
+      - text
+    TaskAnswerAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+          maxLength: 255
+        is_correct:
+          type: boolean
+        task:
+          type: integer
+      required:
+      - id
+      - task
+      - text
+    TaskCategoryCRUD:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    TaskComplexity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        level:
+          type: integer
+          maximum: 32767
+          minimum: 0
+      required:
+      - id
+      - level
+      - name
+    TaskQuestionAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+        answer:
+          type: string
+        is_correct:
+          type: boolean
+        task:
+          type: integer
+      required:
+      - answer
+      - id
+      - task
+      - text
+    TaskStudent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+        condition:
+          type: string
+        complexity_level:
+          type: integer
+          readOnly: true
+        characteristics:
+          type: string
+          readOnly: true
+        correctQuestions:
+          type: string
+          readOnly: true
+        answerOptions:
+          type: string
+          readOnly: true
+      required:
+      - answerOptions
+      - characteristics
+      - complexity_level
+      - condition
+      - correctQuestions
+      - id
+      - text
