@@ -4,13 +4,13 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
+import {AnswerOption} from "@/shared/api/generated";
 
 // Типы данных
 interface Question {
     id: string;
     question: string;
     answer: string;
-    correct: boolean;
 }
 
 interface TextMarkup {
@@ -21,9 +21,9 @@ interface TextMarkup {
 
 interface Characteristic {
     id: string;
-    name: string;
+    name: string; // Название над селектором
     color: string; // Цвет для выделения
-    options: Array<{
+    options: Array<{ // Опции для выбора (сила/слабость и тд)
         id: string;
         name: string;
     }>;
@@ -32,52 +32,41 @@ interface Characteristic {
 interface TaskData {
     id: string;
     text: string;
-    correctAnswer: number;
     characteristics: Characteristic[];
     questions: Question[];
-    timeLimit: number; // в секундах
-    categoryTitle: string;
+    answerOptions: AnswerOption[];
 }
-
-// Тестовые данные пользователя
-const MOCK_USER = {
-    fio: 'Иванов Иван Иванович',
-    group: 'ЛД-301',
-};
 
 // Тестовые данные задания (имитация ответа от бэка)
 const MOCK_TASK: TaskData = {
     id: 'task_123',
-    categoryTitle: 'Определение темперамента по И.П. Павлову',
     text: 'Студент Петров активно участвует в общественной жизни университета. Он быстро адаптируется к новым условиям и легко находит общий язык с окружающими. В стрессовых ситуациях сохраняет спокойствие и рассудительность. Его эмоции стабильны, он редко выходит из себя. При этом он может долго работать над одной задачей, проявляя упорство и настойчивость.',
-    correctAnswer: 1,
-    timeLimit: 600, // 10 минут
     characteristics: [
         {
-            id: 'strength',
+            id: '1',
             name: 'Сила нервной системы',
             color: 'blue',
             options: [
-                { id: 'strong', name: 'Сила' },
-                { id: 'weak', name: 'Слабость' },
+                { id: '1', name: 'Сила' },
+                { id: '2', name: 'Слабость' },
             ],
         },
         {
-            id: 'balance',
+            id: '2',
             name: 'Уравновешенность',
             color: 'yellow',
             options: [
-                { id: 'balanced', name: 'Уравновешенность' },
-                { id: 'unbalanced', name: 'Неуравновешенность' },
+                { id: '3', name: 'Уравновешенность' },
+                { id: '4', name: 'Неуравновешенность' },
             ],
         },
         {
-            id: 'mobility',
+            id: '3',
             name: 'Подвижность',
             color: 'green',
             options: [
-                { id: 'mobile', name: 'Подвижность' },
-                { id: 'inert', name: 'Инертность' },
+                { id: '5', name: 'Подвижность' },
+                { id: '6', name: 'Инертность' },
             ],
         },
     ],
@@ -86,42 +75,35 @@ const MOCK_TASK: TaskData = {
             id: 'q1',
             question: 'Как быстро включается в работу?',
             answer: 'Студент быстро адаптируется к новым условиям',
-            correct: true,
         },
         {
             id: 'q2',
             question: 'Как проявляет себя в ответственных ситуациях?',
             answer: 'В стрессовых ситуациях сохраняет спокойствие',
-            correct: true,
         },
         {
             id: 'q3',
             question: 'Какой у него характер?',
             answer: 'Это не относится к определению темперамента',
-            correct: false,
         },
         {
             id: 'q4',
             question: 'Как он общается с людьми?',
             answer: 'Легко находит общий язык с окружающими',
-            correct: true,
         },
         {
             id: 'q5',
             question: 'Какие у него увлечения?',
             answer: 'Это не относится к определению темперамента',
-            correct: false,
         },
     ],
+    answerOptions: [
+        { id: 1, text: 'Флегматик' },
+        { id: 2, text: 'Сангвиник' },
+        { id: 3, text: 'Холерик' },
+        { id: 4, text: 'Меланхолик' },
+    ],
 };
-
-// Варианты ответов
-const ANSWER_OPTIONS = [
-    { id: 1, name: 'Флегматик' },
-    { id: 2, name: 'Сангвиник' },
-    { id: 3, name: 'Холерик' },
-    { id: 4, name: 'Меланхолик' },
-];
 
 // Цвета для подсветки (используем Tailwind классы)
 const HIGHLIGHT_COLORS: Record<string, string> = {
@@ -155,7 +137,7 @@ export default function TaskPage() {
     const isTrainingMode = mode === 'training';
 
     // State
-    const [timeLeft, setTimeLeft] = useState(MOCK_TASK.timeLimit);
+    const [timeLeft, setTimeLeft] = useState(600);
     const [startTime] = useState(new Date());
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
@@ -209,7 +191,7 @@ export default function TaskPage() {
 
             addDebug(`selectionchange event: hasSelection=${hasSelection}, text="${selectionText.substring(0, 30)}${selectionText.length > 30 ? '...' : ''}"`);
 
-            // Очищаем предыдущий таймаут
+            // Очищаем предыдущий тайм-аут
             if (selectionTimeoutRef.current) {
                 clearTimeout(selectionTimeoutRef.current);
             }
@@ -774,7 +756,7 @@ export default function TaskPage() {
                         Укажите, какой тип темперамента описан в задаче
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {ANSWER_OPTIONS.map((option) => (
+                        {MOCK_TASK.answerOptions.map((option) => (
                             <button
                                 key={option.id}
                                 onClick={() => setSelectedAnswer(option.id)}
@@ -787,7 +769,7 @@ export default function TaskPage() {
                                 }
                 `}
                             >
-                                {option.name}
+                                {option.text}
                             </button>
                         ))}
                     </div>
