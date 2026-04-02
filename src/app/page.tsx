@@ -7,7 +7,7 @@ import {UiHeader} from "@/shared/ui/ui-header";
 import {queue} from "@/shared/ui/Toast";
 
 // Тестовые данные
-const TESTS_DATA = [
+const CATEGORIES_DATA = [
   {
     id: '1',
     button_title: 'Определение темперамента по И.П. Павлову',
@@ -27,17 +27,17 @@ const TESTS_DATA = [
 ];
 
 export default function HomePage() {
-  const [selectedTest, setSelectedTest] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
 
-  const selectedTestData = TESTS_DATA.find((test) => test.id === selectedTest);
+  const selectedCategoryData = CATEGORIES_DATA.find((category) => category.id === selectedCategory);
 
-  const handleTestSelect = (testId: string) => {
-      setSelectedTest(testId);
+  const handleCategorySelect = (categoryId: string) => {
+      setSelectedCategory(categoryId);
   };
 
-  const handleStartTest = () => {
-    if (!selectedTest) {
+  const handleStartCategory = () => {
+    if (!selectedCategory) {
       queue.add({
         title: 'Выберите тест',
         type: 'warning'
@@ -47,8 +47,8 @@ export default function HomePage() {
       return;
     }
 
-    // Переход на динамический маршрут /description/[testId]
-    router.push(`/description/${selectedTest}`);
+    // Переход на динамический маршрут /description/[categoryId]
+    router.push(`/description/${selectedCategory}`);
   };
 
   return (
@@ -58,42 +58,42 @@ export default function HomePage() {
 
         {/* Main Content */}
         <main className="container mx-auto px-6 py-12">
-          {/* Tests Grid */}
+          {/* Categories Grid */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-slate-800 mb-6">
               Выберите тренажер
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {TESTS_DATA.map((test) => (
+              {CATEGORIES_DATA.map((category) => (
                   <button
-                      key={test.id}
-                      onClick={() => handleTestSelect(test.id)}
+                      key={category.id}
+                      onClick={() => handleCategorySelect(category.id)}
                       className={`
                   p-6 rounded-xl transition-all duration-200 text-center min-h-[140px] flex items-center justify-center
                   ${
-                          selectedTest === test.id
+                          selectedCategory === category.id
                               ? 'bg-blue-600 text-white shadow-xl scale-105 ring-4 ring-blue-300'
                               : 'bg-white text-slate-800 hover:bg-blue-50 hover:shadow-lg hover:scale-102 shadow-md border border-slate-200'
                       }
                 `}
                   >
                 <span className="font-semibold leading-tight">
-                  {test.button_title.split('<br>').join('\n')}
+                  {category.button_title.split('<br>').join('\n')}
                 </span>
                   </button>
               ))}
             </div>
           </div>
 
-          {/* Test Description */}
-          {selectedTestData?.short_description && (
+          {/* Category Description */}
+          {selectedCategoryData?.short_description && (
               <div className="mb-12">
                 <div className="bg-white rounded-xl shadow-md p-8 border border-slate-200">
                   <h3 className="text-lg font-semibold text-slate-800 mb-3">
                     Описание тренажера
                   </h3>
                   <p className="text-slate-700 leading-relaxed">
-                    {selectedTestData.short_description}
+                    {selectedCategoryData.short_description}
                   </p>
                 </div>
               </div>
@@ -102,12 +102,12 @@ export default function HomePage() {
           {/* Start Button */}
           <div className="flex justify-center">
             <Button
-                onPress={handleStartTest}
-                isDisabled={!selectedTest}
+                onPress={handleStartCategory}
+                isDisabled={!selectedCategory}
                 className={`
               px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg
               ${
-                    selectedTest
+                    selectedCategory
                         ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-xl hover:scale-105'
                         : 'bg-slate-300 text-slate-500 cursor-not-allowed hover:bg-slate-300'
                 }

@@ -912,6 +912,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/profile/:
+    get:
+      operationId: profile_retrieve
+      tags:
+      - Auth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkUserProfile'
+          description: ''
   /api/question/{id}/:
     get:
       operationId: question_retrieve
@@ -1783,6 +1795,16 @@ components:
       required:
       - data
       - ok
+    AnswerOption:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+      required:
+      - id
+      - text
     CategoryConfigCRUD:
       type: object
       properties:
@@ -1831,6 +1853,19 @@ components:
       - slug
       - style
       - task_category
+    Characteristic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+      required:
+      - color
+      - id
+      - name
     ColorsMarkup:
       type: object
       properties:
@@ -1892,6 +1927,19 @@ components:
           readOnly: true
       required:
       - access
+    CorrectQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        answer:
+          type: string
+      required:
+      - answer
+      - id
+      - text
     DeletedData:
       type: object
       properties:
@@ -2234,6 +2282,16 @@ components:
       required:
       - data
       - ok
+    OkUserProfile:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserProfile'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
     PatchedCategoryConfigCRUD:
       type: object
       properties:
@@ -2387,6 +2445,16 @@ components:
           type: boolean
         task:
           type: integer
+    RoleEnum:
+      enum:
+      - SUPERADMIN
+      - ADMIN
+      - STUDENT
+      type: string
+      description: |-
+        * `SUPERADMIN` - Главный администратор
+        * `ADMIN` - Администратор
+        * `STUDENT` - Студент
     StudentRegistration:
       type: object
       properties:
@@ -2604,13 +2672,19 @@ components:
           type: integer
           readOnly: true
         characteristics:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/Characteristic'
           readOnly: true
         correctQuestions:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/CorrectQuestion'
           readOnly: true
         answerOptions:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerOption'
           readOnly: true
       required:
       - answerOptions
@@ -2620,3 +2694,44 @@ components:
       - correctQuestions
       - id
       - text
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          title: Имя
+        surname:
+          type: string
+          readOnly: true
+          title: Фамилия
+        patronymic:
+          type: string
+          readOnly: true
+          title: Отчество
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        group:
+          type: string
+          readOnly: true
+        is_staff:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - group
+      - id
+      - is_staff
+      - name
+      - patronymic
+      - role
+      - surname

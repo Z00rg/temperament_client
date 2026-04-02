@@ -28,21 +28,21 @@ const COMPLEXITY_LEVELS = [
 export default function DescriptionPage() {
     const router = useRouter();
     const params = useParams();
-    const testId = params.testId as string;
+    const categoryId = params.categoryId as string;
 
     // Получаем информацию о тренажере по ID
     const trainerInfo = TRAINER_INFO;
 
     const handleStartTrainingWithComplexity = (complexityId: number, closeModal: () => void) => {
             // Переход на страницу задания с параметрами: mode=training, complexity=1-4
-            router.push(`/task/${testId}?mode=training&complexity=${complexityId}`);
+            router.push(`/task/${categoryId}?mode=training&complexity=${complexityId}`);
             closeModal();
 
     };
 
     const handleStartControl = () => {
             // Переход на страницу задания с параметром mode=control
-            router.push(`/task/${testId}?mode=control`);
+            router.push(`/task/${categoryId}?mode=control`);
     };
 
     const handleBack = () => {
