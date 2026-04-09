@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
-import {AnswerOption} from "@/shared/api/generated";
+import {AnswerOptionInTask} from "@/shared/api/generated";
 
 // Типы данных
 interface Question {
@@ -34,7 +34,7 @@ interface TaskData {
     text: string;
     characteristics: Characteristic[];
     questions: Question[];
-    answerOptions: AnswerOption[];
+    answerOptions: AnswerOptionInTask[];
 }
 
 // Тестовые данные задания (имитация ответа от бэка)

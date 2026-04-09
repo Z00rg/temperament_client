@@ -7,6 +7,9 @@ paths:
   /api/admin/submissions/{id}/:
     get:
       operationId: admin_submissions_retrieve
+      description: 'Возвращает полный разбор: покраска студента vs эталон, выбранный
+        и правильный ответ, вопросы, характеристики.'
+      summary: Детальный просмотр конкретной попытки студента
       parameters:
       - in: path
         name: id
@@ -14,7 +17,7 @@ paths:
           type: integer
         required: true
       tags:
-      - Admin
+      - Отчёты (Admin)
       responses:
         '200':
           content:
@@ -22,17 +25,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminSubmissionDetailResponse'
           description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/admin/submissions/all/:
     get:
-      operationId: admin_submissions_all_retrieve
+      operationId: admin_submissions_all_list
+      summary: 'Сводная таблица: все студенты со сданными попытками'
       tags:
-      - Admin
+      - Отчёты (Admin)
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkStudentStatementSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentStatement'
           description: ''
   /api/answer/{id}/:
     get:
@@ -142,7 +154,7 @@ paths:
           description: ''
   /api/answer/all/:
     get:
-      operationId: answer_all_retrieve
+      operationId: answer_all_list
       tags:
       - Answer
       responses:
@@ -150,7 +162,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAnswerAdminSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskAnswerAdmin'
           description: ''
   /api/answer/create/:
     post:
@@ -428,7 +442,7 @@ paths:
           description: ''
   /api/category-config/all/:
     get:
-      operationId: category_config_all_retrieve
+      operationId: category_config_all_list
       tags:
       - CategoryConfig
       responses:
@@ -436,7 +450,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryConfigCRUDSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryConfigCRUD'
           description: ''
   /api/category-config/create/:
     post:
@@ -576,7 +592,7 @@ paths:
           description: ''
   /api/colors/all/:
     get:
-      operationId: colors_all_retrieve
+      operationId: colors_all_list
       tags:
       - Colors
       responses:
@@ -584,7 +600,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkColorsMarkupSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ColorsMarkup'
           description: ''
   /api/colors/create/:
     post:
@@ -724,7 +742,7 @@ paths:
           description: ''
   /api/complexity/all/:
     get:
-      operationId: complexity_all_retrieve
+      operationId: complexity_all_list
       tags:
       - Complexity
       responses:
@@ -732,7 +750,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskComplexitySerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskComplexity'
           description: ''
   /api/complexity/create/:
     post:
@@ -757,6 +777,159 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OkTaskComplexity'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/markup-option/{id}/:
+    get:
+      operationId: markup_option_retrieve
+      summary: Получить вариант характеристики
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Варианты характеристик (MarkupOption)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkMarkupOption'
+          description: ''
+  /api/markup-option/{id}/delete/:
+    delete:
+      operationId: markup_option_delete_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Варианты характеристик (MarkupOption)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
+          description: ''
+  /api/markup-option/{id}/update/:
+    put:
+      operationId: markup_option_update_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Варианты характеристик (MarkupOption)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkupOption'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkupOption'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkupOption'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkMarkupOption'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+    patch:
+      operationId: markup_option_update_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Варианты характеристик (MarkupOption)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMarkupOption'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMarkupOption'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMarkupOption'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkMarkupOption'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/markup-option/all/:
+    get:
+      operationId: markup_option_all_list
+      summary: Все варианты характеристик
+      tags:
+      - Варианты характеристик (MarkupOption)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MarkupOption'
+          description: ''
+  /api/markup-option/create/:
+    post:
+      operationId: markup_option_create_create
+      summary: Создать вариант характеристики
+      tags:
+      - Варианты характеристик (MarkupOption)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkupOption'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkupOption'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkupOption'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkMarkupOption'
           description: ''
         '400':
           content:
@@ -872,7 +1045,7 @@ paths:
           description: ''
   /api/markup/all/:
     get:
-      operationId: markup_all_retrieve
+      operationId: markup_all_list
       tags:
       - Markup
       responses:
@@ -880,7 +1053,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryMarkupSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryMarkup'
           description: ''
   /api/markup/create/:
     post:
@@ -915,8 +1090,9 @@ paths:
   /api/profile/:
     get:
       operationId: profile_retrieve
+      summary: Профиль текущего авторизованного пользователя
       tags:
-      - Auth
+      - Профиль студента
       responses:
         '200':
           content:
@@ -1032,7 +1208,7 @@ paths:
           description: ''
   /api/question/all/:
     get:
-      operationId: question_all_retrieve
+      operationId: question_all_list
       tags:
       - Question
       responses:
@@ -1040,7 +1216,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskQuestionAdminSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskQuestionAdmin'
           description: ''
   /api/question/create/:
     post:
@@ -1323,7 +1501,7 @@ paths:
           description: ''
   /api/submission/all/:
     get:
-      operationId: submission_all_retrieve
+      operationId: submission_all_list
       tags:
       - Submission
       responses:
@@ -1331,7 +1509,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkSubmissionSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Submission'
           description: ''
   /api/submission/create/:
     post:
@@ -1363,22 +1543,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/submissions/{id}/:
+    get:
+      operationId: submissions_retrieve
+      description: Студент видит только свои попытки. submission_id возвращается в
+        ответе на submit.
+      summary: Результат попытки студента — оценка, покраска, правильный ответ
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Контроль
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentSubmissionDetailResponse'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/submissions/control/submit/:
     post:
       operationId: submissions_control_submit_create
+      summary: Отправить решение контрольной задачи (сохраняется, макс. 3 попытки)
       tags:
-      - Control
+      - Контроль
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ControlSubmitRequest'
+              $ref: '#/components/schemas/SubmitRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ControlSubmitRequest'
+              $ref: '#/components/schemas/SubmitRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ControlSubmitRequest'
+              $ref: '#/components/schemas/SubmitRequest'
         required: true
       responses:
         '200':
@@ -1396,19 +1610,20 @@ paths:
   /api/submissions/education/check/:
     post:
       operationId: submissions_education_check_create
+      summary: Проверить решение обучающей задачи (без сохранения попытки)
       tags:
-      - Student
+      - Обучение
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EducationSubmitRequest'
+              $ref: '#/components/schemas/SubmitRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/EducationSubmitRequest'
+              $ref: '#/components/schemas/SubmitRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/EducationSubmitRequest'
+              $ref: '#/components/schemas/SubmitRequest'
         required: true
       responses:
         '200':
@@ -1531,7 +1746,7 @@ paths:
           description: ''
   /api/task-category/all/:
     get:
-      operationId: task_category_all_retrieve
+      operationId: task_category_all_list
       tags:
       - TaskCategory
       responses:
@@ -1539,7 +1754,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskCategoryCRUDSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskCategoryCRUD'
           description: ''
   /api/task-category/create/:
     post:
@@ -1679,7 +1896,7 @@ paths:
           description: ''
   /api/task/all/:
     get:
-      operationId: task_all_retrieve
+      operationId: task_all_list
       tags:
       - Task
       responses:
@@ -1687,7 +1904,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAdminSerializerList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskAdmin'
           description: ''
   /api/task/create/:
     post:
@@ -1722,14 +1941,15 @@ paths:
   /api/tasks/control/random/:
     get:
       operationId: tasks_control_random_retrieve
+      summary: Получить случайную задачу для контроля (уровень сложности 3 или 4)
       tags:
-      - Control
+      - Контроль
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskStudent'
+                $ref: '#/components/schemas/ControlTaskResponse'
           description: ''
         '404':
           content:
@@ -1740,14 +1960,16 @@ paths:
   /api/tasks/education/random/:
     get:
       operationId: tasks_education_random_retrieve
+      summary: Получить задачи для обучения (по одной на каждый уровень сложности
+        1–4)
       tags:
-      - Student
+      - Обучение
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskStudentSerializerList'
+                $ref: '#/components/schemas/EducationTasksResponse'
           description: ''
 components:
   schemas:
@@ -1787,15 +2009,24 @@ components:
     AdminSubmissionDetailResponse:
       type: object
       properties:
+        data:
+          $ref: '#/components/schemas/EvaluationResult'
         ok:
           type: boolean
-        data:
-          type: object
-          additionalProperties: {}
       required:
       - data
       - ok
-    AnswerOption:
+    AnswerOptionInTask:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+      required:
+      - id
+      - text
+    AnswerOut:
       type: object
       properties:
         id:
@@ -1853,7 +2084,7 @@ components:
       - slug
       - style
       - task_category
-    Characteristic:
+    CharacteristicInTask:
       type: object
       properties:
         id:
@@ -1862,10 +2093,43 @@ components:
           type: string
         color:
           type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/CharacteristicOption'
       required:
       - color
       - id
       - name
+      - options
+    CharacteristicOption:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    CharacteristicResult:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+        studentCharacteristics:
+          type: string
+          nullable: true
+        correctCharacteristics:
+          type: string
+          nullable: true
+      required:
+      - color
+      - correctCharacteristics
+      - name
+      - studentCharacteristics
     ColorsMarkup:
       type: object
       properties:
@@ -1882,40 +2146,23 @@ components:
       - id
       - name
       - style
-    ControlSubmitRequest:
-      type: object
-      properties:
-        task_id:
-          type: integer
-        time_spent:
-          type: string
-        start_time:
-          type: string
-        answer_markup:
-          type: array
-          items:
-            type: object
-            additionalProperties: {}
-        selected_question_ids:
-          type: array
-          items:
-            type: integer
-        student_characteristics:
-          type: object
-          additionalProperties: {}
-        selected_answer_id:
-          type: integer
-      required:
-      - task_id
-      - time_spent
     ControlSubmitResponse:
       type: object
       properties:
+        data:
+          $ref: '#/components/schemas/SubmitResult'
         ok:
           type: boolean
+      required:
+      - data
+      - ok
+    ControlTaskResponse:
+      type: object
+      properties:
         data:
-          type: object
-          additionalProperties: {}
+          $ref: '#/components/schemas/TaskStudentSchema'
+        ok:
+          type: boolean
       required:
       - data
       - ok
@@ -1927,19 +2174,6 @@ components:
           readOnly: true
       required:
       - access
-    CorrectQuestion:
-      type: object
-      properties:
-        id:
-          type: integer
-        text:
-          type: string
-        answer:
-          type: string
-      required:
-      - answer
-      - id
-      - text
     DeletedData:
       type: object
       properties:
@@ -1957,21 +2191,25 @@ components:
       required:
       - data
       - ok
-    EducationSubmitRequest:
+    EducationSubmitResponse:
       type: object
       properties:
-        task_id:
-          type: integer
+        data:
+          $ref: '#/components/schemas/EvaluationResult'
+        ok:
+          type: boolean
       required:
-      - task_id
-    EducationSubmitResponse:
+      - data
+      - ok
+    EducationTasksResponse:
       type: object
       properties:
         ok:
           type: boolean
         data:
-          type: object
-          additionalProperties: {}
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskStudentSchema'
       required:
       - data
       - ok
@@ -1985,6 +2223,52 @@ components:
       required:
       - error
       - ok
+    EvaluationResult:
+      type: object
+      properties:
+        grade:
+          type: string
+          description: Отлично / Хорошо / Удовлетворительно / Попробуйте еще раз
+        spent_time:
+          type: string
+        text:
+          type: string
+          description: Текст задачи
+        studentAnswer:
+          $ref: '#/components/schemas/AnswerOut'
+        correctAnswer:
+          $ref: '#/components/schemas/AnswerOut'
+        studentMarkup:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupItemOut'
+        correctMarkup:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupItemOut'
+        studentQuestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionOut'
+        correctQuestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionOut'
+        characteristics:
+          type: array
+          items:
+            $ref: '#/components/schemas/CharacteristicResult'
+      required:
+      - characteristics
+      - correctAnswer
+      - correctMarkup
+      - correctQuestions
+      - grade
+      - spent_time
+      - studentAnswer
+      - studentMarkup
+      - studentQuestions
+      - text
     LoginData:
       type: object
       properties:
@@ -2030,265 +2314,181 @@ components:
       required:
       - data
       - ok
+    MarkupItemIn:
+      type: object
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+        category_slug:
+          type: string
+      required:
+      - category_slug
+      - end
+      - start
+    MarkupItemOut:
+      type: object
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+        style:
+          type: string
+      required:
+      - end
+      - start
+      - style
+    MarkupOption:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название варианта
+          maxLength: 255
+        slug:
+          type: string
+          title: Slug варианта
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        category_markup:
+          type: integer
+      required:
+      - category_markup
+      - id
+      - name
+      - slug
     OkAdminRegistration:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/AdminRegistration'
         ok:
           type: boolean
+        data:
+          $ref: '#/components/schemas/AdminRegistration'
       required:
       - data
       - ok
     OkCategoryConfigCRUD:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/CategoryConfigCRUD'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkCategoryConfigCRUDSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/CategoryConfigCRUD'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkCategoryMarkup:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/CategoryMarkup'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkCategoryMarkupSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/CategoryMarkup'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkColorsMarkup:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/ColorsMarkup'
         ok:
           type: boolean
+        data:
+          $ref: '#/components/schemas/ColorsMarkup'
       required:
       - data
       - ok
-    OkColorsMarkupSerializerList:
+    OkMarkupOption:
       type: object
       properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColorsMarkup'
         ok:
           type: boolean
+        data:
+          $ref: '#/components/schemas/MarkupOption'
       required:
       - data
       - ok
     OkStudentRegistration:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/StudentRegistration'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkStudentStatementSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/StudentStatement'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkSubmission:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/Submission'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkSubmissionSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Submission'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkTaskAdmin:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/TaskAdmin'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskAdminSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskAdmin'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkTaskAnswerAdmin:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/TaskAnswerAdmin'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskAnswerAdminSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskAnswerAdmin'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkTaskCategoryCRUD:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/TaskCategoryCRUD'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskCategoryCRUDSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskCategoryCRUD'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkTaskComplexity:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/TaskComplexity'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskComplexitySerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskComplexity'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkTaskQuestionAdmin:
       type: object
       properties:
+        ok:
+          type: boolean
         data:
           $ref: '#/components/schemas/TaskQuestionAdmin'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskQuestionAdminSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskQuestionAdmin'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskStudent:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/TaskStudent'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    OkTaskStudentSerializerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskStudent'
-        ok:
-          type: boolean
       required:
       - data
       - ok
     OkUserProfile:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/UserProfile'
         ok:
           type: boolean
+        data:
+          $ref: '#/components/schemas/UserProfile'
       required:
       - data
       - ok
@@ -2339,6 +2539,23 @@ components:
         style:
           type: string
           maxLength: 255
+    PatchedMarkupOption:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название варианта
+          maxLength: 255
+        slug:
+          type: string
+          title: Slug варианта
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        category_markup:
+          type: integer
     PatchedSubmission:
       type: object
       properties:
@@ -2445,6 +2662,32 @@ components:
           type: boolean
         task:
           type: integer
+    QuestionInTask:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        answer:
+          type: string
+      required:
+      - answer
+      - id
+      - text
+    QuestionOut:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+      required:
+      - answer
+      - id
+      - question
     RoleEnum:
       enum:
       - SUPERADMIN
@@ -2524,6 +2767,16 @@ components:
       - last_spent
       - last_start
       - student_fio
+    StudentSubmissionDetailResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/EvaluationResult'
+        ok:
+          type: boolean
+      required:
+      - data
+      - ok
     Submission:
       type: object
       properties:
@@ -2566,6 +2819,88 @@ components:
       - id
       - student
       - task
+    SubmitRequest:
+      type: object
+      properties:
+        task_id:
+          type: integer
+          description: ID задачи
+        time_spent:
+          type: string
+          description: Затраченное время HH:MM:SS
+        start_time:
+          type: string
+          description: ISO datetime начала, напр. '2025-01-15T10:00:00'
+        answer_markup:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupItemIn'
+        selected_question_ids:
+          type: array
+          items:
+            type: integer
+          description: ID вопросов чат-бота, которые задал студент
+        student_characteristics:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Ключ — slug характеристики, значение — slug опции. Пример:
+            {"strength": "strong"}'
+        selected_answer_id:
+          type: integer
+          description: ID выбранного варианта финального ответа
+      required:
+      - answer_markup
+      - task_id
+      - time_spent
+    SubmitResult:
+      type: object
+      properties:
+        grade:
+          type: string
+        spent_time:
+          type: string
+        text:
+          type: string
+        submission_id:
+          type: integer
+          description: ID сохранённой попытки
+        studentAnswer:
+          $ref: '#/components/schemas/AnswerOut'
+        correctAnswer:
+          $ref: '#/components/schemas/AnswerOut'
+        studentMarkup:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupItemOut'
+        correctMarkup:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupItemOut'
+        studentQuestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionOut'
+        correctQuestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionOut'
+        characteristics:
+          type: array
+          items:
+            $ref: '#/components/schemas/CharacteristicResult'
+      required:
+      - characteristics
+      - correctAnswer
+      - correctMarkup
+      - correctQuestions
+      - grade
+      - spent_time
+      - studentAnswer
+      - studentMarkup
+      - studentQuestions
+      - submission_id
+      - text
     TaskAdmin:
       type: object
       properties:
@@ -2658,41 +2993,36 @@ components:
       - id
       - task
       - text
-    TaskStudent:
+    TaskStudentSchema:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         text:
           type: string
         condition:
           type: string
         complexity_level:
           type: integer
-          readOnly: true
         characteristics:
           type: array
           items:
-            $ref: '#/components/schemas/Characteristic'
-          readOnly: true
-        correctQuestions:
+            $ref: '#/components/schemas/CharacteristicInTask'
+        questions:
           type: array
           items:
-            $ref: '#/components/schemas/CorrectQuestion'
-          readOnly: true
+            $ref: '#/components/schemas/QuestionInTask'
         answerOptions:
           type: array
           items:
-            $ref: '#/components/schemas/AnswerOption'
-          readOnly: true
+            $ref: '#/components/schemas/AnswerOptionInTask'
       required:
       - answerOptions
       - characteristics
       - complexity_level
       - condition
-      - correctQuestions
       - id
+      - questions
       - text
     UserProfile:
       type: object

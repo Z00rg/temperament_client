@@ -1,23 +1,13 @@
 import Image from "next/image";
-import { SignOutButton } from "@/features/auth";
+import {SignOutButton} from "@/features/auth";
+import {useProfileQuery} from "@/entities/profile";
 
 interface UiHeaderProps {
     isAdmin?: boolean;
-    user?: {
-        fio: string;
-        group?: string;
-        role?: string;
-    };
 }
 
-// Тестовые данные для студента (fallback)
-const MOCK_STUDENT = {
-    fio: 'Иванов Иван Иванович',
-    group: 'ЛД-301',
-};
-
-export function UiHeader({ isAdmin = false, user }: UiHeaderProps) {
-    const displayUser = user || (isAdmin ? { fio: 'Администратор' } : MOCK_STUDENT);
+export function UiHeader({isAdmin = false}: UiHeaderProps) {
+    const displayUser = useProfileQuery().data;
 
     return (
         <header className="bg-white shadow-md border-b border-slate-200">
@@ -47,31 +37,32 @@ export function UiHeader({ isAdmin = false, user }: UiHeaderProps) {
 
                     {/* Right side - User Info and Logout */}
                     <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-end">
+                        {displayUser && <div className="flex flex-col items-end">
                             {isAdmin ? (
                                 <span className="font-semibold text-slate-800">
-                  {displayUser.fio}
-                </span>
+                                    {displayUser.data.surname} {displayUser.data.name} {displayUser.data.patronymic}
+                                </span>
                             ) : (
                                 <>
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm text-slate-600">Студент:</span>
                                         <span className="font-semibold text-slate-800">
-                      {displayUser.fio}
-                    </span>
+                                            {displayUser.data.surname} {displayUser.data.name} {displayUser.data.patronymic}
+                                        </span>
                                     </div>
-                                    {displayUser.group && (
+                                    {displayUser.data.group && (
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm text-slate-600">Группа:</span>
                                             <span className="font-semibold text-slate-800">
-                        {displayUser.group}
-                      </span>
+                                                {displayUser.data.group}
+                                            </span>
                                         </div>
                                     )}
                                 </>
                             )}
                         </div>
-                        <SignOutButton />
+                        }
+                        <SignOutButton/>
                     </div>
                 </div>
             </div>

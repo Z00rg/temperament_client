@@ -1,1 +1,1 @@
-// export { useProfileQuery } from "./queries"
+export { useProfileQuery } from "./queries"
