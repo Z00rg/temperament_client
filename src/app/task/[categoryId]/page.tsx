@@ -1,44 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { Button } from '@/shared/ui/Button';
+import {useState, useEffect, useRef, useCallback, useMemo} from 'react';
+import {useRouter, useParams, useSearchParams} from 'next/navigation';
+import {Button} from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
-import {AnswerOptionInTask} from "@/shared/api/generated";
-
-// Типы данных
-interface Question {
-    id: string;
-    question: string;
-    answer: string;
-}
-
-interface TextMarkup {
-    start: number;
-    end: number;
-    category: string;
-}
-
-interface Characteristic {
-    id: string;
-    name: string; // Название над селектором
-    color: string; // Цвет для выделения
-    options: Array<{ // Опции для выбора (сила/слабость и тд)
-        id: string;
-        name: string;
-    }>;
-}
-
-interface TaskData {
-    id: string;
-    text: string;
-    characteristics: Characteristic[];
-    questions: Question[];
-    answerOptions: AnswerOptionInTask[];
-}
+import {MarkupItemIn, SubmitRequest, TaskStudentSchema} from "@/shared/api/generated";
+// import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
 
 // Тестовые данные задания (имитация ответа от бэка)
-const MOCK_TASK: TaskData = {
+// TODO: заменить на запрос с бека (уже написан в entities/task)
+const MOCK_TASK: TaskStudentSchema = {
     id: 'task_123',
     text: 'Студент Петров активно участвует в общественной жизни университета. Он быстро адаптируется к новым условиям и легко находит общий язык с окружающими. В стрессовых ситуациях сохраняет спокойствие и рассудительность. Его эмоции стабильны, он редко выходит из себя. При этом он может долго работать над одной задачей, проявляя упорство и настойчивость.',
     characteristics: [
@@ -47,8 +18,8 @@ const MOCK_TASK: TaskData = {
             name: 'Сила нервной системы',
             color: 'blue',
             options: [
-                { id: '1', name: 'Сила' },
-                { id: '2', name: 'Слабость' },
+                {id: '1', name: 'Сила'},
+                {id: '2', name: 'Слабость'},
             ],
         },
         {
@@ -56,8 +27,8 @@ const MOCK_TASK: TaskData = {
             name: 'Уравновешенность',
             color: 'yellow',
             options: [
-                { id: '3', name: 'Уравновешенность' },
-                { id: '4', name: 'Неуравновешенность' },
+                {id: '3', name: 'Уравновешенность'},
+                {id: '4', name: 'Неуравновешенность'},
             ],
         },
         {
@@ -65,43 +36,43 @@ const MOCK_TASK: TaskData = {
             name: 'Подвижность',
             color: 'green',
             options: [
-                { id: '5', name: 'Подвижность' },
-                { id: '6', name: 'Инертность' },
+                {id: '5', name: 'Подвижность'},
+                {id: '6', name: 'Инертность'},
             ],
         },
     ],
     questions: [
         {
             id: 'q1',
-            question: 'Как быстро включается в работу?',
+            text: 'Как быстро включается в работу?',
             answer: 'Студент быстро адаптируется к новым условиям',
         },
         {
             id: 'q2',
-            question: 'Как проявляет себя в ответственных ситуациях?',
+            text: 'Как проявляет себя в ответственных ситуациях?',
             answer: 'В стрессовых ситуациях сохраняет спокойствие',
         },
         {
             id: 'q3',
-            question: 'Какой у него характер?',
+            text: 'Какой у него характер?',
             answer: 'Это не относится к определению темперамента',
         },
         {
             id: 'q4',
-            question: 'Как он общается с людьми?',
+            text: 'Как он общается с людьми?',
             answer: 'Легко находит общий язык с окружающими',
         },
         {
             id: 'q5',
-            question: 'Какие у него увлечения?',
+            text: 'Какие у него увлечения?',
             answer: 'Это не относится к определению темперамента',
         },
     ],
     answerOptions: [
-        { id: 1, text: 'Флегматик' },
-        { id: 2, text: 'Сангвиник' },
-        { id: 3, text: 'Холерик' },
-        { id: 4, text: 'Меланхолик' },
+        {id: 1, text: 'Флегматик'},
+        {id: 2, text: 'Сангвиник'},
+        {id: 3, text: 'Холерик'},
+        {id: 4, text: 'Меланхолик'},
     ],
 };
 
@@ -142,7 +113,7 @@ export default function TaskPage() {
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
     const [chatbotAnswer, setChatbotAnswer] = useState('');
-    const [textMarkup, setTextMarkup] = useState<TextMarkup[]>([]);
+    const [textMarkup, setTextMarkup] = useState<MarkupItemIn[]>([]);
 
     // Динамические характеристики (выбранные значения)
     const [selectedCharacteristics, setSelectedCharacteristics] = useState<
@@ -286,7 +257,7 @@ export default function TaskPage() {
                 );
 
                 if (!hasOverlap) {
-                    return { start: matchStart, end: matchEnd };
+                    return {start: matchStart, end: matchEnd};
                 }
             }
 
@@ -322,10 +293,10 @@ export default function TaskPage() {
                 return;
             }
 
-            const { start, end } = position;
+            const {start, end} = position;
 
             // Добавляем новое выделение
-            const newMarkup: TextMarkup = { start, end, category: categoryId };
+            const newMarkup: MarkupItemIn = {start, end, category_slug: categoryId};
             addDebug(`✅ Adding markup: ${JSON.stringify(newMarkup)}`);
             setTextMarkup((prev) => [...prev, newMarkup]);
 
@@ -364,7 +335,7 @@ export default function TaskPage() {
 
             // Получаем цвет для категории
             const characteristic = MOCK_TASK.characteristics.find(
-                (c) => c.id === mark.category
+                (c) => c.id === mark.category_slug
             );
             const color = characteristic?.color || 'gray';
 
@@ -383,7 +354,7 @@ export default function TaskPage() {
 
             // Находим оригинальный индекс в несортированном массиве
             const originalIndex = textMarkup.findIndex(
-                m => m.start === mark.start && m.end === mark.end && m.category === mark.category
+                m => m.start === mark.start && m.end === mark.end && m.category_slug === mark.category_slug
             );
 
             // Добавляем выделенный текст как React элемент
@@ -391,7 +362,7 @@ export default function TaskPage() {
                 <mark
                     key={`mark-${sortedIndex}`}
                     className={`${highlightClass} px-1 py-0.5 rounded group relative cursor-pointer transition-colors`}
-                    data-category={mark.category}
+                    data-category={mark.category_slug}
                     data-index={sortedIndex}
                 >
                     {highlightedPart}
@@ -457,7 +428,7 @@ export default function TaskPage() {
         if (manual) {
             // Проверяем, что выделено по каждой характеристике
             const missingCategories = MOCK_TASK.characteristics.filter(
-                (char) => !textMarkup.some((mark) => mark.category === char.id)
+                (char) => !textMarkup.some((mark) => mark.category_slug === char.id)
             );
 
             if (missingCategories.length > 0) {
@@ -469,7 +440,7 @@ export default function TaskPage() {
             }
 
             if (selectedAnswer === null) {
-                alert('Необходимо выбрать тип темперамента.');
+                alert('Необходимо выбрать ответ.');
                 return;
             }
         }
@@ -482,48 +453,34 @@ export default function TaskPage() {
         const minutes = Math.floor(spentTime / 60);
         const seconds = spentTime % 60;
 
-        const submissionData = {
-            taskId: MOCK_TASK.id,
-            categoryId: categoryId,
-            mode: mode, // training или control
-            complexity: complexity, // 1-4 или null
-            studentAnswer: selectedAnswer,
-            text: MOCK_TASK.text,
-            markup: textMarkup,
-            selectedQuestions: selectedQuestions,
-            selectedCharacteristics: selectedCharacteristics,
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
-            spentTime: `${minutes.toString().padStart(2, '0')}:${seconds
+        const submissionData: SubmitRequest = {
+            task_id: MOCK_TASK.id,
+            time_spent: `${minutes.toString().padStart(2, '0')}:${seconds
                 .toString()
                 .padStart(2, '0')}`,
+            start_time: startTime.toISOString(),
+            answer_markup: textMarkup,
+            selected_question_ids: selectedQuestions,
+            student_characteristics: selectedCharacteristics,
+            selected_answer_id: selectedAnswer!,
         };
 
         console.log('Submitting data:', submissionData);
 
-        // TODO: Отправка на бэк
+
         // if (isTrainingMode) {
-        //   // Режим обучения - не сохраняем оценку
-        //   await fetch('/api/task/submit-training', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(submissionData),
-        //   });
+        //     // Режим обучения - без оценки
+        //     const useSubmitEducationTask = useSubmitEducationTaskMutation();
+        //     useSubmitEducationTask.mutate(submissionData)
         // } else {
         //   // Режим контроля - сохраняем оценку
-        //   await fetch('/api/task/submit-control', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(submissionData),
-        //   });
+        //     const useSubmitControlTask = useSubmitControlTaskMutation();
+        //     useSubmitControlTask.mutate(submissionData)
         // }
 
         // Переход на страницу оценки с параметрами
+        // TODO: Отправка на страничку просмотра попытки по id с бека, а не по остальной куче данных
         router.push(`/estimation/${categoryId}?mode=${mode}${complexity ? `&complexity=${complexity}` : ''}`);
-    };
-
-    const handleLogout = () => {
-        router.push('/authorisation');
     };
 
     return (
@@ -538,12 +495,13 @@ export default function TaskPage() {
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-yellow-800">🐛 Debug Panel</h3>
                         <div className="flex items-center gap-4">
-              <span className="text-sm">
-                isSelecting: <span className={`font-bold ${isSelecting ? 'text-red-600' : 'text-green-600'}`}>{isSelecting ? 'TRUE (blocked)' : 'FALSE (allowed)'}</span>
-              </span>
+                              <span className="text-sm">
+                                isSelecting: <span
+                                  className={`font-bold ${isSelecting ? 'text-red-600' : 'text-green-600'}`}>{isSelecting ? 'TRUE (blocked)' : 'FALSE (allowed)'}</span>
+                              </span>
                             <span className="text-sm">
-                Markup count: <span className="font-bold">{textMarkup.length}</span>
-              </span>
+                                Markup count: <span className="font-bold">{textMarkup.length}</span>
+                              </span>
                             <button
                                 onClick={() => setDebugInfo([])}
                                 className="text-xs bg-yellow-200 hover:bg-yellow-300 px-2 py-1 rounded"
@@ -567,8 +525,10 @@ export default function TaskPage() {
                 {isTrainingMode && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-3">
-                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>
                             <div>
                                 <div className="font-semibold text-blue-800">Режим обучения</div>
@@ -721,17 +681,14 @@ export default function TaskPage() {
                                     onClick={() => handleQuestionSelect(question.id)}
                                     disabled={isDisabled}
                                     className={`
-                    px-4 py-2 rounded-lg font-medium transition-all
-                    ${
-                                        isSelected
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : isDisabled
-                                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                    }
-                  `}
+                                                px-4 py-2 rounded-lg font-medium transition-all
+                                                ${isSelected ? 'bg-blue-600 text-white shadow-md'
+                                        : isDisabled
+                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    } `}
                                 >
-                                    {question.question}
+                                    {question.text}
                                 </button>
                             );
                         })}

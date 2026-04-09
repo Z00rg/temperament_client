@@ -1,0 +1,1 @@
+export { useEducationTaskQuery, useSubmitEducationTaskMutation, useSubmitControlTaskMutation, useControlTaskQuery } from "./queries"

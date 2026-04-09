@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import {categoryConfigAllRetrieve, categoryConfigRetrieve} from "@/shared/api/generated";
+import {categoryConfigAllList, categoryConfigRetrieve} from "@/shared/api/generated";
 
 const categoryListKey = ['categoryList'];
 const categoryKey = (id: number) => ["category", id];
@@ -9,7 +9,7 @@ export function useCategoryListQuery() {
 
     return useQuery({
        queryKey: categoryListKey,
-       queryFn: () => categoryConfigAllRetrieve(),
+       queryFn: () => categoryConfigAllList(),
        staleTime: 60 * 60 * 1000, // 60 минут
        retry: 0,
     });

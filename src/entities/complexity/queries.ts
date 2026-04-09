@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import {complexityAllRetrieve, complexityRetrieve} from "@/shared/api/generated";
+import {complexityAllList, complexityRetrieve} from "@/shared/api/generated";
 
 const complexityListKey = ['complexityList'];
 const complexityKey = (id: number) => ["complexity", id];
@@ -9,7 +9,7 @@ export function useComplexityListQuery() {
 
     return useQuery({
         queryKey: complexityListKey,
-        queryFn: () => complexityAllRetrieve(),
+        queryFn: () => complexityAllList(),
         staleTime: 60 * 60 * 1000, // 60 минут
         retry: 0,
     });
