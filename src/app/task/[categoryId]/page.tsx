@@ -5,6 +5,7 @@ import {useRouter, useParams, useSearchParams} from 'next/navigation';
 import {Button} from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
 import {MarkupItemIn, SubmitRequest, TaskStudentSchema} from "@/shared/api/generated";
+// import {useControlTaskQuery, useEducationTaskQuery} from "@/entities/task";
 // import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
 
 // Тестовые данные задания (имитация ответа от бэка)
@@ -99,7 +100,11 @@ export default function TaskPage() {
     const params = useParams();
     const searchParams = useSearchParams();
 
-    const categoryId = params.categoryId as string; // temperament или economic
+    // TODO: вытаскивать отсюда дату для тасков
+    // const useControlTask = useControlTaskQuery();
+    // const useEducationTask = useEducationTaskQuery();
+
+    // const categoryId = params.categoryId as string; // temperament или economic
     const mode = searchParams.get('mode') || 'control'; // training или control
     const complexityParam = searchParams.get('complexity'); // 1, 2, 3, 4
     const complexity = complexityParam ? parseInt(complexityParam) : null;
@@ -467,20 +472,21 @@ export default function TaskPage() {
 
         console.log('Submitting data:', submissionData);
 
+        let estimationId: number = 1;
 
+        // TODO: Отправка на страничку просмотра попытки по id с бека, а не по остальной куче данных
         // if (isTrainingMode) {
         //     // Режим обучения - без оценки
         //     const useSubmitEducationTask = useSubmitEducationTaskMutation();
-        //     useSubmitEducationTask.mutate(submissionData)
+        //     useSubmitEducationTask.mutate(submissionData).then((data) => {estimationId = data.estimationId})
         // } else {
         //   // Режим контроля - сохраняем оценку
         //     const useSubmitControlTask = useSubmitControlTaskMutation();
-        //     useSubmitControlTask.mutate(submissionData)
+        //     useSubmitControlTask.mutate(submissionData).then((data) => {estimationId = data.estimationId})
         // }
 
         // Переход на страницу оценки с параметрами
-        // TODO: Отправка на страничку просмотра попытки по id с бека, а не по остальной куче данных
-        router.push(`/estimation/${categoryId}?mode=${mode}${complexity ? `&complexity=${complexity}` : ''}`);
+        router.push(`/estimation/${estimationId}`);
     };
 
     return (

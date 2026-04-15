@@ -41,6 +41,7 @@ interface EstimationData {
 }
 
 // Тестовые данные оценки (имитация ответа от бэка)
+// TODO: переделать под типизацию с бэка
 const MOCK_ESTIMATION: EstimationData = {
     grade: 'Хорошо',
     time: '08:45',
