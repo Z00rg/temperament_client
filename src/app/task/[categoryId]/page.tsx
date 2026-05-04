@@ -5,8 +5,8 @@ import {useRouter, useParams, useSearchParams} from 'next/navigation';
 import {Button} from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
 import {MarkupItemIn, SubmitRequest, TaskStudentSchema} from "@/shared/api/generated";
-// import {useControlTaskQuery, useEducationTaskQuery} from "@/entities/task";
-// import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
+import {useControlTaskQuery, useEducationTaskQuery} from "@/entities/task";
+import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
 
 // Тестовые данные задания (имитация ответа от бэка)
 // TODO: заменить на запрос с бека (уже написан в entities/task)
@@ -103,6 +103,11 @@ export default function TaskPage() {
     // TODO: вытаскивать отсюда дату для тасков
     // const useControlTask = useControlTaskQuery();
     // const useEducationTask = useEducationTaskQuery();
+
+    // Сабмиты
+    const submitEducationTask = useSubmitEducationTaskMutation();
+    const submitControlTask = useSubmitControlTaskMutation();
+
 
     // const categoryId = params.categoryId as string; // temperament или economic
     const mode = searchParams.get('mode') || 'control'; // training или control
@@ -474,15 +479,15 @@ export default function TaskPage() {
 
         let estimationId: number = 1;
 
-        // TODO: Отправка на страничку просмотра попытки по id с бека, а не по остальной куче данных
+        // TODO: Отправка на страничку просмотра попытки по id с бека
         // if (isTrainingMode) {
         //     // Режим обучения - без оценки
-        //     const useSubmitEducationTask = useSubmitEducationTaskMutation();
-        //     useSubmitEducationTask.mutate(submissionData).then((data) => {estimationId = data.estimationId})
+        //     const data = await submitEducationTask.mutateAsync(submissionData);
+        //     estimationId = data.data.submission_id;
         // } else {
-        //   // Режим контроля - сохраняем оценку
-        //     const useSubmitControlTask = useSubmitControlTaskMutation();
-        //     useSubmitControlTask.mutate(submissionData).then((data) => {estimationId = data.estimationId})
+        //     // Режим контроля - сохраняем оценку
+        //     const data = await submitControlTask.mutateAsync(submissionData);
+        //     estimationId = data.data.submission_id;
         // }
 
         // Переход на страницу оценки с параметрами

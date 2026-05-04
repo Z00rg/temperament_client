@@ -7,7 +7,9 @@ interface UiHeaderProps {
 }
 
 export function UiHeader({isAdmin = false}: UiHeaderProps) {
-    const displayUser = useProfileQuery().data;
+    const useProfile = useProfileQuery();
+
+    console.log('profile data:', useProfile.data);
 
     return (
         <header className="bg-white shadow-md border-b border-slate-200">
@@ -37,31 +39,32 @@ export function UiHeader({isAdmin = false}: UiHeaderProps) {
 
                     {/* Right side - User Info and Logout */}
                     <div className="flex items-center gap-6">
-                        {displayUser && <div className="flex flex-col items-end">
-                            {isAdmin ? (
-                                <span className="font-semibold text-slate-800">
-                                    {displayUser.data.surname} {displayUser.data.name} {displayUser.data.patronymic}
-                                </span>
-                            ) : (
-                                <>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-slate-600">Студент:</span>
-                                        <span className="font-semibold text-slate-800">
-                                            {displayUser.data.surname} {displayUser.data.name} {displayUser.data.patronymic}
-                                        </span>
-                                    </div>
-                                    {displayUser.data.group && (
+                        {!useProfile.isPending && useProfile.data && (
+                            <div className="flex flex-col items-end">
+                                {isAdmin ? (
+                                    <span className="font-semibold text-slate-800">
+                                        {useProfile.data.surname} {useProfile.data.name} {useProfile.data.patronymic}
+                                    </span>
+                                ) : (
+                                    <>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm text-slate-600">Группа:</span>
+                                            <span className="text-sm text-slate-600">Студент:</span>
                                             <span className="font-semibold text-slate-800">
-                                                {displayUser.data.group}
+                                                {useProfile.data.surname} {useProfile.data.name} {useProfile.data.patronymic}
                                             </span>
                                         </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                        }
+                                        {useProfile.data.group && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm text-slate-600">Группа:</span>
+                                                <span className="font-semibold text-slate-800">
+                                                    {useProfile.data.group}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
                         <SignOutButton/>
                     </div>
                 </div>

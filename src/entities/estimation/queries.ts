@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-    submissionRetrieve,
+    submissionsRetrieve,
 } from "@/shared/api/generated";
 
 const estimationKey = (id: number) => ["estimation", id];
@@ -10,7 +10,7 @@ export function useEstimationQuery(estimationId: number) {
 
     return useQuery({
         queryKey: estimationKey(estimationId),
-        queryFn: () => submissionRetrieve(estimationId),
+        queryFn: () => submissionsRetrieve(estimationId),
         enabled: !!estimationId,
         staleTime: 60 * 60 * 1000, // 60 минут
         retry: 0,

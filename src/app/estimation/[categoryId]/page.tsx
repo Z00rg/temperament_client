@@ -1,346 +1,241 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
-import {UiHeader} from "@/shared/ui/ui-header";
+import { UiHeader } from '@/shared/ui/ui-header';
+import { useEstimationQuery } from '@/entities/estimation'; // путь к хуку
+import {
+    EvaluationResult,
+    MarkupItemOut,
+    CharacteristicResult,
+    QuestionOut,
+} from '@/shared/api/generated';
 
-// Типы данных
-interface TextMarkup {
-    start: number;
-    end: number;
-    category: string;
-}
-
-interface Characteristic {
-    id: string;
-    name: string;
-    color: string;
-}
-
-interface Question {
-    id: string;
-    question: string;
-    answer: string;
-}
-
-interface EstimationData {
-    grade: string;
-    time: string;
-    studentAnswer: number;
-    correctAnswer: number;
-    text: string;
-    studentMarkup: TextMarkup[];
-    correctMarkup: TextMarkup[];
-    studentCharacteristics: Record<string, string>;
-    correctCharacteristics: Record<string, string>;
-    characteristics: Characteristic[];
-    extraDataNote?: string; // Лишние данные от преподавателя
-    missingQuestions: Question[]; // Недостающие вопросы (1-3)
-    answerOptions: string[]; // ["Флегматик", "Сангвиник", ...]
-}
-
-// Тестовые данные оценки (имитация ответа от бэка)
-// TODO: переделать под типизацию с бэка
-const MOCK_ESTIMATION: EstimationData = {
+// ─── Мок-данные (структура соответствует EvaluationResult) ───────────────────
+const MOCK_EVALUATION: EvaluationResult = {
     grade: 'Хорошо',
-    time: '08:45',
-    studentAnswer: 2, // Сангвиник
-    correctAnswer: 1, // Флегматик
+    spent_time: '08:45',
     text: 'Студент Петров активно участвует в общественной жизни университета. Он быстро адаптируется к новым условиям и легко находит общий язык с окружающими. В стрессовых ситуациях сохраняет спокойствие и рассудительность. Его эмоции стабильны, он редко выходит из себя. При этом он может долго работать над одной задачей, проявляя упорство и настойчивость.',
+    studentAnswer: { id: 2, text: 'Сангвиник' },
+    correctAnswer: { id: 1, text: 'Флегматик' },
     studentMarkup: [
-        { start: 15, end: 45, category: 'strength' },
-        { start: 170, end: 200, category: 'balance' },
-        { start: 116, end: 145, category: 'mobility' },
+        { start: 15,  end: 45,  style: 'bg-blue-200' },
+        { start: 170, end: 200, style: 'bg-yellow-200' },
+        { start: 116, end: 145, style: 'bg-green-200' },
     ],
     correctMarkup: [
-        { start: 15, end: 62, category: 'strength' },
-        { start: 170, end: 230, category: 'balance' },
-        { start: 85, end: 145, category: 'mobility' },
+        { start: 15,  end: 62,  style: 'bg-blue-200' },
+        { start: 170, end: 230, style: 'bg-yellow-200' },
+        { start: 85,  end: 145, style: 'bg-green-200' },
+        // «Лишние данные» — это отдельная характеристика только в эталоне
+        { start: 245, end: 295, style: 'bg-orange-200' },
     ],
-    studentCharacteristics: {
-        strength: 'strong',
-        balance: 'balanced',
-        mobility: 'mobile',
-    },
-    correctCharacteristics: {
-        strength: 'strong',
-        balance: 'balanced',
-        mobility: 'inert', // Студент ошибся
-    },
+    studentQuestions: [
+        { id: 3, question: 'Как он общается с людьми?',           answer: 'Легко находит общий язык с окружающими' },
+    ],
+    correctQuestions: [
+        { id: 1, question: 'Как быстро включается в работу?',     answer: 'Студент быстро адаптируется к новым условиям' },
+        { id: 2, question: 'Как проявляет себя в ответственных ситуациях?', answer: 'В стрессовых ситуациях сохраняет спокойствие' },
+        { id: 3, question: 'Как он общается с людьми?',           answer: 'Легко находит общий язык с окружающими' },
+    ],
     characteristics: [
-        { id: 'strength', name: 'Сила нервной системы', color: 'blue' },
-        { id: 'balance', name: 'Уравновешенность', color: 'yellow' },
-        { id: 'mobility', name: 'Подвижность', color: 'green' },
+        { name: 'Сила нервной системы', color: 'blue',   studentCharacteristics: 'Сила',           correctCharacteristics: 'Сила' },
+        { name: 'Уравновешенность',     color: 'yellow', studentCharacteristics: 'Уравновешенность', correctCharacteristics: 'Уравновешенность' },
+        { name: 'Подвижность',          color: 'green',  studentCharacteristics: 'Подвижность',     correctCharacteristics: 'Инертность' },
     ],
-    extraDataNote: 'Обратите внимание на темп речи и скорость принятия решений',
-    missingQuestions: [
-        {
-            id: 'q1',
-            question: 'Как быстро включается в работу?',
-            answer: 'Студент быстро адаптируется к новым условиям',
-        },
-        {
-            id: 'q2',
-            question: 'Как проявляет себя в ответственных ситуациях?',
-            answer: 'В стрессовых ситуациях сохраняет спокойствие',
-        },
-    ],
-    answerOptions: ['Флегматик', 'Сангвиник', 'Холерик', 'Меланхолик'],
 };
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Опции характеристик для отображения
-const CHARACTERISTIC_OPTIONS: Record<string, Record<string, string>> = {
-    strength: {
-        strong: 'Сила',
-        weak: 'Слабость',
-    },
-    balance: {
-        balanced: 'Уравновешенность',
-        unbalanced: 'Неуравновешенность',
-    },
-    mobility: {
-        mobile: 'Подвижность',
-        inert: 'Инертность',
-    },
-};
+// Цвет оценки
+function gradeColor(grade: string) {
+    switch (grade) {
+        case 'Отлично':           return 'text-emerald-600';
+        case 'Хорошо':            return 'text-blue-600';
+        case 'Удовлетворительно': return 'text-amber-600';
+        default:                  return 'text-red-600';
+    }
+}
 
+// Рендер текста с выделениями (style — Tailwind-класс, например "bg-blue-200")
+function TextWithHighlights({ text, markup }: { text: string; markup: MarkupItemOut[] }) {
+    if (!markup.length) return <span>{text}</span>;
+
+    const sorted = [...markup].sort((a, b) => a.start - b.start);
+    const nodes: React.ReactNode[] = [];
+    let last = 0;
+
+    sorted.forEach((mark, i) => {
+        if (mark.start > last) {
+            nodes.push(<span key={`t-${last}`}>{text.slice(last, mark.start)}</span>);
+        }
+        nodes.push(
+            <mark key={`m-${i}`} className={`${mark.style} px-0.5 py-0.5 rounded`}>
+                {text.slice(mark.start, mark.end)}
+            </mark>
+        );
+        last = mark.end;
+    });
+
+    if (last < text.length) {
+        nodes.push(<span key={`t-${last}`}>{text.slice(last)}</span>);
+    }
+
+    return <>{nodes}</>;
+}
+
+// Вычисляем «недостающие» вопросы: есть в correctQuestions, но нет в studentQuestions
+function missingQuestions(student: QuestionOut[], correct: QuestionOut[]): QuestionOut[] {
+    const studentIds = new Set(student.map((q) => q.id));
+    return correct.filter((q) => !studentIds.has(q.id));
+}
+
+// ─── Компонент страницы ───────────────────────────────────────────────────────
 export default function EstimationPage() {
     const router = useRouter();
     const params = useParams();
-    const categoryId = params.categoryId as string;
 
-    const [estimationData, setEstimationData] = useState<EstimationData | null>(
-        null
-    );
+    // id попытки из URL: /estimation/[id]
+    const estimationId = Number(params.id);
 
-    useEffect(() => {
-        // В реальности получаем с бэка, сейчас берем из localStorage или MOCK
-        const storedData = localStorage.getItem('taskSubmission');
+    // TODO: раскомментировать когда бэк готов; пока падаем на мок ниже
+    // const { data: response, isLoading, isError } = useEstimationQuery(estimationId);
+    // const data: EvaluationResult | undefined = response?.data;
 
-        if (storedData) {
-            // Обработка данных из localStorage (пока используем MOCK)
-            setEstimationData(MOCK_ESTIMATION);
-        } else {
-            setEstimationData(MOCK_ESTIMATION);
-        }
+    // Временно: всегда используем мок
+    const isLoading = false;
+    const isError = false;
+    const data: EvaluationResult = MOCK_EVALUATION;
 
-        // Предотвращение возврата назад
-        const handlePopState = () => {
-            router.push(`/description/${categoryId}`);
-        };
-
-        window.history.pushState(null, '', window.location.href);
-        window.addEventListener('popstate', handlePopState);
-
-        return () => {
-            window.removeEventListener('popstate', handlePopState);
-        };
-    }, [categoryId, router]);
-
-    const handleBackToInstructions = () => {
-        localStorage.removeItem('taskSubmission');
-        localStorage.removeItem('estimationInfo');
-        router.push(`/description/${categoryId}`);
-    };
-
-    const handleRetakeControl = () => {
-        localStorage.removeItem('taskSubmission');
-        localStorage.removeItem('estimationInfo');
-        router.push(`/task/${categoryId}`);
-    };
-
-    // Рендер текста с выделениями
-    const renderTextWithHighlights = (markup: TextMarkup[], text: string) => {
-        if (!markup.length) {
-            return <span>{text}</span>;
-        }
-
-        const sortedMarkup = [...markup].sort((a, b) => a.start - b.start);
-        const elements: React.ReactNode[] = [];
-        let lastIndex = 0;
-
-        sortedMarkup.forEach((mark, index) => {
-            if (mark.start > lastIndex) {
-                elements.push(
-                    <span key={`text-${lastIndex}`}>{text.slice(lastIndex, mark.start)}</span>
-                );
-            }
-
-            const characteristic = estimationData?.characteristics.find(
-                (c) => c.id === mark.category
-            );
-            const color = characteristic?.color || 'gray';
-
-            const colorClasses: Record<string, string> = {
-                blue: 'bg-blue-200',
-                yellow: 'bg-yellow-200',
-                green: 'bg-green-200',
-                red: 'bg-red-200',
-                purple: 'bg-purple-200',
-                pink: 'bg-pink-200',
-            };
-
-            const highlightClass = colorClasses[color] || 'bg-gray-200';
-            const highlightedPart = text.slice(mark.start, mark.end);
-
-            elements.push(
-                <mark key={`mark-${index}`} className={`${highlightClass} px-1 py-0.5 rounded`}>
-                    {highlightedPart}
-                </mark>
-            );
-
-            lastIndex = mark.end;
-        });
-
-        if (lastIndex < text.length) {
-            elements.push(<span key={`text-${lastIndex}`}>{text.slice(lastIndex)}</span>);
-        }
-
-        return <>{elements}</>;
-    };
-
-    if (!estimationData) {
+    // ── Loading / Error ────────────────────────────────────────────────────────
+    if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-xl text-slate-600">Загрузка результатов...</p>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                <p className="text-xl text-slate-500 animate-pulse">Загрузка результатов…</p>
+            </div>
+        );
+    }
+
+    if (isError || !data) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                <div className="text-center space-y-3">
+                    <p className="text-xl text-red-500 font-semibold">Не удалось загрузить результаты</p>
+                    <Button onPress={() => router.push('/')} className="bg-slate-600 text-white px-6 py-2 rounded-lg">
+                        На главную
+                    </Button>
                 </div>
             </div>
         );
     }
 
-    // Определение цвета оценки
-    const gradeColor =
-        estimationData.grade === 'Отлично'
-            ? 'text-green-600'
-            : estimationData.grade === 'Хорошо'
-                ? 'text-blue-600'
-                : estimationData.grade === 'Удовлетворительно'
-                    ? 'text-yellow-600'
-                    : 'text-red-600';
+    const missing = missingQuestions(data.studentQuestions, data.correctQuestions);
+    const answerIsCorrect = data.studentAnswer.id === data.correctAnswer.id;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-            {/* Header */}
-            <UiHeader/>
+            <UiHeader />
 
-            {/* Main Content */}
-            <main className="container mx-auto px-6 py-12 max-w-7xl">
-                {/* Grade and Time */}
-                <div className="bg-white rounded-xl shadow-md p-8 mb-6 border border-slate-200">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <main className="container mx-auto px-4 sm:px-6 py-10 max-w-7xl space-y-6">
+
+                {/* ── Оценка и время ──────────────────────────────────────────── */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div className="flex flex-wrap gap-6 items-center">
                         <div>
-                            <span className="text-lg text-slate-600">Ваша оценка: </span>
-                            <span className={`text-2xl font-bold ${gradeColor}`}>
-                {estimationData.grade}
-              </span>
+                            <span className="text-sm text-slate-500 block mb-0.5">Ваша оценка</span>
+                            <span className={`text-3xl font-bold ${gradeColor(data.grade)}`}>
+                                {data.grade}
+                            </span>
                         </div>
+                        <div className="w-px h-10 bg-slate-200 hidden sm:block" />
                         <div>
-                            <span className="text-lg text-slate-600">Ваше время: </span>
-                            <span className="text-2xl font-bold text-slate-800">
-                {estimationData.time}
-              </span>
+                            <span className="text-sm text-slate-500 block mb-0.5">Затраченное время</span>
+                            <span className="text-3xl font-bold text-slate-800">{data.spent_time}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Student Answer vs Correct Answer */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Student Answer */}
-                    <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
-                        <h2 className="text-lg font-bold text-slate-800 mb-4">
-                            Ваш ответ:{' '}
-                            <span
-                                className={
-                                    estimationData.studentAnswer === estimationData.correctAnswer
-                                        ? 'text-green-600'
-                                        : 'text-red-600'
-                                }
-                            >
-                {estimationData.answerOptions[estimationData.studentAnswer - 1]}
-              </span>
-                        </h2>
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-slate-700 leading-relaxed min-h-[200px]">
-                            {renderTextWithHighlights(
-                                estimationData.studentMarkup,
-                                estimationData.text
-                            )}
+                {/* ── Тексты с разметкой ──────────────────────────────────────── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Студент */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-base font-bold text-slate-700">Ваш ответ</h2>
+                            <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                                answerIsCorrect
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-red-100 text-red-700'
+                            }`}>
+                                {data.studentAnswer.text}
+                                {answerIsCorrect ? ' ✓' : ' ✗'}
+                            </span>
+                        </div>
+                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-slate-700 leading-relaxed min-h-[160px] text-sm">
+                            <TextWithHighlights text={data.text} markup={data.studentMarkup} />
                         </div>
                     </div>
 
-                    {/* Correct Answer */}
-                    <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
-                        <h2 className="text-lg font-bold text-slate-800 mb-4">
-                            Эталон ответа:{' '}
-                            <span className="text-green-600">
-                {estimationData.answerOptions[estimationData.correctAnswer - 1]}
-              </span>
-                        </h2>
-                        <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-slate-700 leading-relaxed min-h-[200px]">
-                            {renderTextWithHighlights(
-                                estimationData.correctMarkup,
-                                estimationData.text
-                            )}
+                    {/* Эталон */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-base font-bold text-slate-700">Эталон ответа</h2>
+                            <span className="text-sm font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                                {data.correctAnswer.text} ✓
+                            </span>
+                        </div>
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-slate-700 leading-relaxed min-h-[160px] text-sm">
+                            <TextWithHighlights text={data.text} markup={data.correctMarkup} />
                         </div>
                     </div>
                 </div>
 
-                {/* Characteristics Comparison */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-slate-200">
-                    <h2 className="text-lg font-bold text-slate-800 mb-4">
-                        Выбранные характеристики
-                    </h2>
-                    <div className="space-y-4">
-                        {estimationData.characteristics.map((char) => {
-                            const studentValue =
-                                estimationData.studentCharacteristics[char.id];
-                            const correctValue =
-                                estimationData.correctCharacteristics[char.id];
-                            const isCorrect = studentValue === correctValue;
+                {/* ── Характеристики ──────────────────────────────────────────── */}
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 className="text-base font-bold text-slate-700 mb-4">Характеристики</h2>
+                    <div className="space-y-3">
+                        {data.characteristics.map((char, i) => {
+                            const isCorrect =
+                                char.studentCharacteristics === char.correctCharacteristics;
 
-                            const colorClasses: Record<string, string> = {
-                                blue: 'bg-blue-100 border-blue-300',
-                                yellow: 'bg-yellow-100 border-yellow-300',
-                                green: 'bg-green-100 border-green-300',
+                            // Цвет плашки под цвет разметки
+                            const chipBg: Record<string, string> = {
+                                blue:   'bg-blue-50   border-blue-200',
+                                yellow: 'bg-yellow-50 border-yellow-200',
+                                green:  'bg-green-50  border-green-200',
+                                red:    'bg-red-50    border-red-200',
+                                purple: 'bg-purple-50 border-purple-200',
+                                pink:   'bg-pink-50   border-pink-200',
                             };
-                            const colorClass = colorClasses[char.color] || 'bg-gray-100';
 
                             return (
                                 <div
-                                    key={char.id}
-                                    className={`p-4 rounded-lg border-2 ${colorClass}`}
+                                    key={i}
+                                    className={`flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3 ${chipBg[char.color] ?? 'bg-slate-50 border-slate-200'}`}
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                      <span className="font-semibold text-slate-800">
-                        {char.name}:
-                      </span>
-                                        </div>
-                                        <div className="flex items-center gap-6">
-                                            <div className="text-right">
-                                                <div className="text-sm text-slate-600">Ваш выбор:</div>
-                                                <div
-                                                    className={`font-semibold ${
-                                                        isCorrect ? 'text-green-600' : 'text-red-600'
-                                                    }`}
-                                                >
-                                                    {CHARACTERISTIC_OPTIONS[char.id]?.[studentValue] ||
-                                                        studentValue}
-                                                    {!isCorrect && ' ✗'}
-                                                    {isCorrect && ' ✓'}
-                                                </div>
+                                    <span className="font-medium text-slate-700 text-sm">{char.name}</span>
+
+                                    <div className="flex items-center gap-4 text-sm">
+                                        {/* Ответ студента */}
+                                        <div className="text-right">
+                                            <div className="text-xs text-slate-400 mb-0.5">Ваш выбор</div>
+                                            <div className={`font-semibold ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                {char.studentCharacteristics ?? '—'}
+                                                {isCorrect ? ' ✓' : ' ✗'}
                                             </div>
-                                            {!isCorrect && (
+                                        </div>
+
+                                        {/* Эталон (показываем только если ошибся) */}
+                                        {!isCorrect && (
+                                            <>
+                                                <div className="w-px h-8 bg-slate-200" />
                                                 <div className="text-right">
-                                                    <div className="text-sm text-slate-600">Эталон:</div>
-                                                    <div className="font-semibold text-green-600">
-                                                        {CHARACTERISTIC_OPTIONS[char.id]?.[correctValue] ||
-                                                            correctValue}
+                                                    <div className="text-xs text-slate-400 mb-0.5">Эталон</div>
+                                                    <div className="font-semibold text-emerald-600">
+                                                        {char.correctCharacteristics ?? '—'}
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -348,34 +243,62 @@ export default function EstimationPage() {
                     </div>
                 </div>
 
-                {/* Extra Data and Missing Questions */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Extra Data Note */}
-                    {estimationData.extraDataNote && (
-                        <div className="bg-orange-50 rounded-xl shadow-md p-6 border-2 border-orange-300">
-                            <h3 className="text-lg font-bold text-orange-800 mb-3">
-                                Лишние данные
-                            </h3>
-                            <p className="text-slate-700">{estimationData.extraDataNote}</p>
-                        </div>
-                    )}
+                {/* ── Вопросы ─────────────────────────────────────────────────── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Заданные вопросы */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-base font-bold text-slate-700 mb-4">
+                            Заданные вами вопросы
+                            <span className="ml-2 text-sm font-normal text-slate-400">
+                                ({data.studentQuestions.length})
+                            </span>
+                        </h2>
+                        {data.studentQuestions.length === 0 ? (
+                            <p className="text-slate-400 text-sm">Вопросы не задавались</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {data.studentQuestions.map((q) => {
+                                    const inCorrect = data.correctQuestions.some((cq) => cq.id === q.id);
+                                    return (
+                                        <div
+                                            key={q.id}
+                                            className={`rounded-lg border p-3 text-sm ${
+                                                inCorrect
+                                                    ? 'bg-emerald-50 border-emerald-200'
+                                                    : 'bg-orange-50 border-orange-200'
+                                            }`}
+                                        >
+                                            <div className="font-medium text-slate-700 mb-1">В: {q.question}</div>
+                                            <div className="text-slate-500">О: {q.answer}</div>
+                                            {!inCorrect && (
+                                                <div className="text-orange-600 text-xs mt-1 font-medium">
+                                                    ⚠ Этот вопрос лишний — он не нужен для решения
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
 
-                    {/* Missing Questions */}
-                    {estimationData.missingQuestions.length > 0 && (
-                        <div className="bg-red-50 rounded-xl shadow-md p-6 border-2 border-red-300">
-                            <h3 className="text-lg font-bold text-red-800 mb-3">
-                                Недостающие данные (вопросы, которые нужно было задать)
-                            </h3>
-                            <div className="space-y-3">
-                                {estimationData.missingQuestions.map((q) => (
+                    {/* Недостающие вопросы */}
+                    {missing.length > 0 && (
+                        <div className="bg-red-50 rounded-xl shadow-sm border-2 border-red-200 p-6">
+                            <h2 className="text-base font-bold text-red-700 mb-4">
+                                Недостающие вопросы
+                                <span className="ml-2 text-sm font-normal text-red-400">
+                                    ({missing.length})
+                                </span>
+                            </h2>
+                            <div className="space-y-2">
+                                {missing.map((q) => (
                                     <div
                                         key={q.id}
-                                        className="bg-white p-3 rounded border border-red-200"
+                                        className="bg-white rounded-lg border border-red-200 p-3 text-sm"
                                     >
-                                        <div className="font-semibold text-slate-800 mb-1">
-                                            В: {q.question}
-                                        </div>
-                                        <div className="text-slate-600 text-sm">О: {q.answer}</div>
+                                        <div className="font-medium text-slate-700 mb-1">В: {q.question}</div>
+                                        <div className="text-slate-500">О: {q.answer}</div>
                                     </div>
                                 ))}
                             </div>
@@ -383,19 +306,19 @@ export default function EstimationPage() {
                     )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {/* ── Кнопки ──────────────────────────────────────────────────── */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
                     <Button
-                        onPress={handleBackToInstructions}
-                        className="bg-slate-600 hover:bg-slate-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg"
+                        onPress={() => window.history.go(-2)}
+                        className="bg-slate-600 hover:bg-slate-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md"
                     >
                         Вернуться к инструкциям
                     </Button>
                     <Button
-                        onPress={handleRetakeControl}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg"
+                        onPress={() => router.back()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md"
                     >
-                        Пройти контроль еще раз
+                        Пройти контроль ещё раз
                     </Button>
                 </div>
             </main>
