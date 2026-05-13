@@ -1,143 +1,69 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import AdminLayout from '@/shared/layouts/AdminLayout';
 
-// Типы данных
-interface Attempt {
-    id: string;
-    startTime: string;
-    endTime: string;
-    spentTime: string;
-    estimation: string;
-    taskCategory: string; // ID категории задания
-}
-
-interface Student {
-    id: string;
-    fio: string;
+// Типы данных согласно новому формату
+interface StudentData {
+    student_fio: string;
     group: string;
-    attempts: Attempt[];
+    last_start: string;
+    last_end: string;
+    last_spent: string;
+    last_grade: string | number;
+    last_category: string;
+    attempts: string[];
 }
 
-interface TaskCategory {
-    id: string;
-    name: string;
-}
-
-// Тестовые данные категорий заданий
-const MOCK_CATEGORIES: TaskCategory[] = [
-    { id: 'all', name: 'Все задания' },
-    { id: 'temperament', name: 'Определение темперамента' },
-    { id: 'economic', name: 'Экономические задачи' },
-];
-
-// Тестовые данные студентов
-const MOCK_STUDENTS: Student[] = [
+const MOCK_DATA: StudentData[] = [
     {
-        id: '1',
-        fio: 'Иванов Иван Иванович',
+        student_fio: 'Иванов Иван Иванович',
         group: 'ЛД-301',
-        attempts: [
-            {
-                id: 'a1',
-                startTime: '2025-02-01 10:30:00',
-                endTime: '2025-02-01 10:38:45',
-                spentTime: '08:45',
-                estimation: 'Хорошо',
-                taskCategory: 'temperament',
-            },
-            {
-                id: 'a2',
-                startTime: '2025-02-02 14:20:00',
-                endTime: '2025-02-02 14:31:15',
-                spentTime: '11:15',
-                estimation: 'Отлично',
-                taskCategory: 'temperament',
-            },
-            {
-                id: 'a3',
-                startTime: '2025-02-03 09:15:00',
-                endTime: '2025-02-03 09:27:30',
-                spentTime: '12:30',
-                estimation: 'Удовлетворительно',
-                taskCategory: 'economic',
-            },
-        ],
+        last_start: '2025-02-01 10:30:00',
+        last_end: '2025-02-01 10:38:45',
+        last_spent: '08:45',
+        last_grade: 4,
+        last_category: 'Определение темперамента',
+        attempts: ['a1', 'a2'],
     },
     {
-        id: '2',
-        fio: 'Петрова Мария Сергеевна',
+        student_fio: 'Петрова Мария Сергеевна',
         group: 'ЛД-301',
-        attempts: [
-            {
-                id: 'a4',
-                startTime: '2025-02-01 11:00:00',
-                endTime: '2025-02-01 11:12:30',
-                spentTime: '12:30',
-                estimation: 'Отлично',
-                taskCategory: 'economic',
-            },
-        ],
+        last_start: '2025-02-01 11:00:00',
+        last_end: '2025-02-01 11:12:30',
+        last_spent: '12:30',
+        last_grade: 5,
+        last_category: 'Экономические задачи',
+        attempts: ['a4'],
     },
     {
-        id: '3',
-        fio: 'Сидоров Петр Александрович',
+        student_fio: 'Сидоров Петр Александрович',
         group: 'ЛД-302',
-        attempts: [
-            {
-                id: 'a5',
-                startTime: '2025-02-02 10:00:00',
-                endTime: '2025-02-02 10:09:20',
-                spentTime: '09:20',
-                estimation: 'Хорошо',
-                taskCategory: 'temperament',
-            },
-            {
-                id: 'a6',
-                startTime: '2025-02-03 15:30:00',
-                endTime: '2025-02-03 15:45:10',
-                spentTime: '15:10',
-                estimation: 'Неудовлетворительно',
-                taskCategory: 'temperament',
-            },
-        ],
+        last_start: '2025-02-03 15:30:00',
+        last_end: '2025-02-03 15:45:10',
+        last_spent: '15:10',
+        last_grade: 2,
+        last_category: 'Определение темперамента',
+        attempts: ['a5', 'a6'],
     },
     {
-        id: '4',
-        fio: 'Кузнецова Анна Викторовна',
+        student_fio: 'Кузнецова Анна Викторовна',
         group: 'ЛД-303',
-        attempts: [
-            {
-                id: 'a7',
-                startTime: '2025-02-01 16:00:00',
-                endTime: '2025-02-01 16:08:45',
-                spentTime: '08:45',
-                estimation: 'Отлично',
-                taskCategory: 'economic',
-            },
-            {
-                id: 'a8',
-                startTime: '2025-02-02 13:00:00',
-                endTime: '2025-02-02 13:11:20',
-                spentTime: '11:20',
-                estimation: 'Отлично',
-                taskCategory: 'economic',
-            },
-            {
-                id: 'a9',
-                startTime: '2025-02-04 10:30:00',
-                endTime: '2025-02-04 10:39:15',
-                spentTime: '09:15',
-                estimation: 'Хорошо',
-                taskCategory: 'temperament',
-            },
-        ],
+        last_start: '2025-02-04 10:30:00',
+        last_end: '2025-02-04 10:39:15',
+        last_spent: '09:15',
+        last_grade: 3,
+        last_category: 'Определение темперамента',
+        attempts: ['a7', 'a8', 'a9'],
     },
     {
-        id: '5',
-        fio: 'Смирнов Алексей Дмитриевич',
+        student_fio: 'Смирнов Алексей Дмитриевич',
         group: 'ЛД-302',
+        last_start: '',
+        last_end: '',
+        last_spent: '',
+        last_grade: '',
+        last_category: '',
         attempts: [],
     },
 ];
@@ -150,86 +76,72 @@ export default function StatementsPage() {
 
     const rowsPerPage = 10;
 
-    // Фильтрация студентов
-    const filteredStudents = useMemo(() => {
-        return MOCK_STUDENTS.filter((student) => {
-            const matchesGroup = groupFilter
-                ? student.group.toUpperCase().includes(groupFilter.toUpperCase())
-                : true;
-            const matchesStudent = studentFilter
-                ? student.fio.toUpperCase().includes(studentFilter.toUpperCase())
-                : true;
+    // Динамическое формирование категорий из данных
+    const dynamicCategories = useMemo(() => {
+        const categories = MOCK_DATA
+            .map(item => item.last_category)
+            .filter(cat => cat && cat.trim() !== '');
+        return ['all', ...Array.from(new Set(categories))];
+    }, []);
 
-            // Фильтр по типу задания - проверяем последнюю попытку
-            let matchesCategory = true;
-            if (categoryFilter !== 'all') {
-                const latestAttempt =
-                    student.attempts.length > 0
-                        ? student.attempts[student.attempts.length - 1]
-                        : null;
-                matchesCategory = latestAttempt
-                    ? latestAttempt.taskCategory === categoryFilter
-                    : false;
-            }
+    // Исправленная логика фильтрации
+    const filteredData = useMemo(() => {
+        return MOCK_DATA.filter((item) => {
+            const searchGroup = groupFilter.trim().toLowerCase();
+            const searchStudent = studentFilter.trim().toLowerCase();
+
+            const matchesGroup = !searchGroup
+                ? true
+                : item.group.toLowerCase().includes(searchGroup);
+
+            const matchesStudent = !searchStudent
+                ? true
+                : item.student_fio.toLowerCase().includes(searchStudent);
+
+            const matchesCategory = categoryFilter === 'all'
+                ? true
+                : item.last_category === categoryFilter;
 
             return matchesGroup && matchesStudent && matchesCategory;
         });
     }, [groupFilter, studentFilter, categoryFilter]);
 
     // Пагинация
-    const totalPages = Math.ceil(filteredStudents.length / rowsPerPage);
-    const paginatedStudents = useMemo(() => {
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    const paginatedData = useMemo(() => {
         const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        return filteredStudents.slice(start, end);
-    }, [filteredStudents, currentPage]);
+        return filteredData.slice(start, start + rowsPerPage);
+    }, [filteredData, currentPage]);
 
-    // Сброс страницы при изменении фильтров
-    useMemo(() => {
+    // Сброс на 1 страницу при поиске
+    useEffect(() => {
         setCurrentPage(1);
     }, [groupFilter, studentFilter, categoryFilter]);
 
-    const handlePrevPage = () => {
-        if (currentPage > 1) setCurrentPage(currentPage - 1);
-    };
-
-    const handleNextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-    };
-
-    // Форматирование даты
     const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-        });
+        if (!dateStr) return '—';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+        } catch { return '—'; }
     };
 
-    // Цвет оценки
-    const getGradeColor = (grade: string) => {
-        switch (grade) {
-            case 'Отлично':
-                return 'text-green-600 font-semibold';
-            case 'Хорошо':
-                return 'text-blue-600 font-semibold';
-            case 'Удовлетворительно':
-                return 'text-yellow-600 font-semibold';
-            case 'Неудовлетворительно':
-                return 'text-red-600 font-semibold';
-            default:
-                return 'text-slate-600';
+    const getGradeDisplay = (grade: string | number) => {
+        const g = String(grade);
+        switch (g) {
+            case '5': return { text: 'Отлично', color: 'text-green-600 font-semibold' };
+            case '4': return { text: 'Хорошо', color: 'text-blue-600 font-semibold' };
+            case '3': return { text: 'Удовлетворительно', color: 'text-yellow-600 font-semibold' };
+            case '2': return { text: 'Неудовлетворительно', color: 'text-red-600 font-semibold' };
+            default: return { text: g || '—', color: 'text-slate-600' };
         }
-    };
-
-    // Получение названия категории
-    const getCategoryName = (categoryId: string) => {
-        const category = MOCK_CATEGORIES.find((c) => c.id === categoryId);
-        return category?.name || categoryId;
     };
 
     return (
@@ -237,47 +149,36 @@ export default function StatementsPage() {
             {/* Filters */}
             <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-slate-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Group Filter */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Номер группы
-                        </label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Номер группы</label>
                         <input
                             type="text"
                             value={groupFilter}
                             onChange={(e) => setGroupFilter(e.target.value)}
-                            placeholder="Введите группу"
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Напр: ЛД-301"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
-
-                    {/* Student Filter */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Студент
-                        </label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Студент</label>
                         <input
                             type="text"
                             value={studentFilter}
                             onChange={(e) => setStudentFilter(e.target.value)}
                             placeholder="Введите ФИО"
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
-
-                    {/* Category Filter */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Тип задания
-                        </label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Тип задания</label>
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                         >
-                            {MOCK_CATEGORIES.map((category) => (
-                                <option key={category.id} value={category.id}>
-                                    {category.name}
+                            {dynamicCategories.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat === 'all' ? 'Все задания' : cat}
                                 </option>
                             ))}
                         </select>
@@ -291,114 +192,55 @@ export default function StatementsPage() {
                     <table className="w-full">
                         <thead className="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                №
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                ФИО студента
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Группа
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Тип задания
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Время начала
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Время окончания
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Затраченное время
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Попытка
-                            </th>
-                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">
-                                Оценка
-                            </th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 w-12">№</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">ФИО студента</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Группа</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Тип задания</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Время начала</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Время окончания</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Затраченное время</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Попытка</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700">Оценка</th>
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
-                        {paginatedStudents.length === 0 ? (
+                        {paginatedData.length === 0 ? (
                             <tr>
-                                <td
-                                    colSpan={9}
-                                    className="px-4 py-8 text-center text-slate-500"
-                                >
-                                    Нет данных
-                                </td>
+                                <td colSpan={9} className="px-4 py-10 text-center text-slate-500 italic">Данные не найдены</td>
                             </tr>
                         ) : (
-                            paginatedStudents.map((student, index) => {
-                                const latestAttempt =
-                                    student.attempts.length > 0
-                                        ? student.attempts[student.attempts.length - 1]
-                                        : null;
-                                const displayedAttempts = student.attempts.slice(-3); // Последние 3 попытки
-
+                            paginatedData.map((item, index) => {
+                                const gradeInfo = getGradeDisplay(item.last_grade);
                                 return (
-                                    <tr
-                                        key={student.id}
-                                        className="hover:bg-slate-50 transition-colors"
-                                    >
+                                    <tr key={index} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-4 py-3 text-center font-semibold text-slate-800">
                                             {(currentPage - 1) * rowsPerPage + index + 1}
                                         </td>
+                                        <td className="px-4 py-3 text-center text-slate-700">{item.student_fio}</td>
+                                        <td className="px-4 py-3 text-center text-slate-700">{item.group}</td>
                                         <td className="px-4 py-3 text-center text-slate-700">
-                                            {student.fio}
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-slate-700">
-                                            {student.group}
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-slate-700">
-                                            {latestAttempt ? (
+                                            {item.last_category ? (
                                                 <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                                                    {getCategoryName(latestAttempt.taskCategory)}
+                                                    {item.last_category}
                                                 </span>
-                                            ) : (
-                                                <span className="text-slate-400">—</span>
-                                            )}
+                                            ) : <span className="text-slate-400">—</span>}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-slate-600 text-sm">
-                                            {latestAttempt
-                                                ? formatDate(latestAttempt.startTime)
-                                                : 'Нет данных'}
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-slate-600 text-sm">
-                                            {latestAttempt
-                                                ? formatDate(latestAttempt.endTime)
-                                                : 'Нет данных'}
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-slate-700 font-mono">
-                                            {latestAttempt ? latestAttempt.spentTime : 'Нет данных'}
-                                        </td>
+                                        <td className="px-4 py-3 text-center text-slate-600 text-sm">{formatDate(item.last_start)}</td>
+                                        <td className="px-4 py-3 text-center text-slate-600 text-sm">{formatDate(item.last_end)}</td>
+                                        <td className="px-4 py-3 text-center text-slate-700 font-mono">{item.last_spent || '—'}</td>
                                         <td className="px-4 py-3 text-center">
-                                            {displayedAttempts.length > 0 ? (
-                                                <div className="flex items-center justify-center gap-2">
-                                                    {displayedAttempts.map((attempt) => (
-                                                        <a
-                                                            key={attempt.id}
-                                                            href={`/estimation/${attempt.id}`}
-                                                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                                                        >
-                                                            {student.attempts.indexOf(attempt) + 1}
+                                            <div className="flex items-center justify-center gap-2">
+                                                {item.attempts.length > 0 ? (
+                                                    item.attempts.map((id, i) => (
+                                                        <a key={id} href={`/estimation/${id}`} className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                                            {i + 1}
                                                         </a>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <span className="text-slate-400">—</span>
-                                            )}
+                                                    ))
+                                                ) : <span className="text-slate-400">—</span>}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            {latestAttempt ? (
-                                                <span className={getGradeColor(latestAttempt.estimation)}>
-                                                    {latestAttempt.estimation}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400">Нет данных</span>
-                                            )}
+                                            <span className={gradeInfo.color}>{gradeInfo.text}</span>
                                         </td>
                                     </tr>
                                 );
@@ -409,62 +251,29 @@ export default function StatementsPage() {
                 </div>
 
                 {/* Pagination */}
-                {filteredStudents.length > 0 && (
-                    <div className="bg-slate-50 px-6 py-4 border-t border-slate-200">
-                        <div className="flex items-center justify-center gap-4">
-                            <button
-                                onClick={handlePrevPage}
-                                disabled={currentPage === 1}
-                                className={`p-2 rounded-lg transition-colors ${
-                                    currentPage === 1
-                                        ? 'text-slate-400 cursor-not-allowed'
-                                        : 'text-slate-600 hover:bg-slate-200'
-                                }`}
-                            >
-                                <svg
-                                    className="w-5 h-5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 19l-7-7 7-7"
-                                    />
-                                </svg>
-                            </button>
-
-                            <span className="text-slate-700">
-                            Страница <span className="font-semibold">{currentPage}</span> из{' '}
-                                    <span className="font-semibold">{totalPages}</span>
-                            </span>
-
-                            <button
-                                onClick={handleNextPage}
-                                disabled={currentPage === totalPages}
-                                className={`p-2 rounded-lg transition-colors ${
-                                    currentPage === totalPages
-                                        ? 'text-slate-400 cursor-not-allowed'
-                                        : 'text-slate-600 hover:bg-slate-200'
-                                }`}
-                            >
-                                <svg
-                                    className="w-5 h-5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5l7 7-7 7"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
+                {filteredData.length > 0 && (
+                    <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-center items-center gap-4">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`p-2 rounded-lg transition-colors ${currentPage === 1 ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-200'}`}
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <span className="text-slate-700">
+                            Страница <span className="font-semibold">{currentPage}</span> из <span className="font-semibold">{totalPages}</span>
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`p-2 rounded-lg transition-colors ${currentPage === totalPages ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-200'}`}
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
                     </div>
                 )}
             </div>

@@ -23,6 +23,8 @@ export function UiHeader({isAdmin = false}: UiHeaderProps) {
                                 width={190}
                                 height={70}
                                 alt="Логотип приложения"
+                                priority
+                                style={{ height: 'auto', width: 'auto' }}
                             />
                             <div className="flex flex-col">
                                 <h1 className="text-xl font-bold text-slate-800">
