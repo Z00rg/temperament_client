@@ -24,7 +24,7 @@ const MOCK_DATA: StudentData[] = [
         last_spent: '08:45',
         last_grade: 4,
         last_category: 'Определение темперамента',
-        attempts: ['a1', 'a2'],
+        attempts: ['121', '122'],
     },
     {
         student_fio: 'Петрова Мария Сергеевна',
@@ -34,7 +34,7 @@ const MOCK_DATA: StudentData[] = [
         last_spent: '12:30',
         last_grade: 5,
         last_category: 'Экономические задачи',
-        attempts: ['a4'],
+        attempts: ['14'],
     },
     {
         student_fio: 'Сидоров Петр Александрович',
@@ -44,7 +44,7 @@ const MOCK_DATA: StudentData[] = [
         last_spent: '15:10',
         last_grade: 2,
         last_category: 'Определение темперамента',
-        attempts: ['a5', 'a6'],
+        attempts: ['15', '16'],
     },
     {
         student_fio: 'Кузнецова Анна Викторовна',
@@ -54,17 +54,7 @@ const MOCK_DATA: StudentData[] = [
         last_spent: '09:15',
         last_grade: 3,
         last_category: 'Определение темперамента',
-        attempts: ['a7', 'a8', 'a9'],
-    },
-    {
-        student_fio: 'Смирнов Алексей Дмитриевич',
-        group: 'ЛД-302',
-        last_start: '',
-        last_end: '',
-        last_spent: '',
-        last_grade: '',
-        last_category: '',
-        attempts: [],
+        attempts: ['17', '18', '19'],
     },
 ];
 
