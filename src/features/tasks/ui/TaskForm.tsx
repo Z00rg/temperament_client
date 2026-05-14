@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/shared/ui/Button';
 
-// ─── Типы ────────────────────────────────────────────────────────────────────
+// ─── Типы конфигурации категорий ─────────────────────────────────────────────
 
 interface CharacteristicOption {
     id: string;
@@ -19,8 +19,7 @@ interface Characteristic {
 
 /**
  * Конфигурация категории задания.
- * Один запрос GET /api/task-categories возвращает CategoryConfig[].
- * Содержит всё необходимое для рендера формы: характеристики и варианты ответа.
+ * GET /api/task-categories → CategoryConfig[]
  *
  * TODO: заменить MOCK_CATEGORY_CONFIGS на хук:
  *   const { data: categoryConfigs = [] } = useQuery({
@@ -35,43 +34,78 @@ interface CategoryConfig {
     answerOptions: Array<{ id: number; text: string }>;
 }
 
-/** Совпадает с MarkupItemIn из generated.ts → SubmitRequest.answer_markup */
-interface MarkupItem {
+// ─── Типы разметки и вопросов ─────────────────────────────────────────────────
+
+/** Совпадает с MarkupItemIn из generated.ts → SubmitRequest.answer_markup. Без id — его выдаёт сервер. */
+interface MarkupItemPayload {
     start: number;
     end: number;
     category_slug: string; // id характеристики | 'undue'
 }
 
-interface Question {
-    id: string;
-    number: number;
+/** Вопрос для отправки на сервер. Без id — его выдаёт сервер. */
+interface QuestionPayload {
     question: string;
     answer: string;
-    /** true → id попадёт в selected_question_ids при сабмите */
+    /** true → id попадёт в selected_question_ids при сабмите студента */
     correct: boolean;
 }
 
+// ─── Payload / Response ───────────────────────────────────────────────────────
+
 /**
- * Итоговые данные формы.
- * Поля зеркалят SubmitRequest + TaskStudentSchema —
- * именно эту структуру ожидает бэк при создании/редактировании задания.
+ * То, что отправляем на сервер при CREATE / UPDATE.
+ * Никаких id внутри вложенных сущностей — их генерирует сервер.
+ *
+ * POST /api/tasks          → создание
+ * PUT  /api/tasks/:taskId  → обновление (id задания берём из URL/props, не из тела)
  */
-interface TaskFormData {
-    id?: string;
+interface CreateTaskPayload {
     taskCategory: string;
     complexity: string;
     taskText: string;
     /** Полная структура характеристик категории (отдаётся студенту как TaskStudentSchema.characteristics) */
     characteristics: Characteristic[];
-    /** Правильные значения: charId → optionId (эталон, аналог student_characteristics) */
+    /** Правильные значения: charId → optionId (эталон преподавателя, аналог student_characteristics) */
     correctCharacteristics: Record<string, string>;
-    /** Совпадает с answer_markup / MarkupItemIn[] */
-    textMarkup: MarkupItem[];
+    /** Разметка текста. Совпадает с MarkupItemIn[] / answer_markup */
+    textMarkup: MarkupItemPayload[];
     /** Варианты ответа категории (отдаётся студенту как TaskStudentSchema.answerOptions) */
     answerOptions: Array<{ id: number; text: string }>;
     /** Правильный ответ: id из answerOptions (аналог selected_answer_id) */
-    correctAnswerId: number | null;
-    questions: Question[];
+    correctAnswerId: number;
+    /** Вопросы без id — сервер присвоит их при сохранении */
+    questions: QuestionPayload[];
+}
+
+/**
+ * То, что возвращает сервер после сохранения / при загрузке задания для редактирования.
+ * Все id здесь уже проставлены сервером.
+ *
+ * GET /api/tasks/:taskId → TaskFormData
+ */
+interface TaskFormData extends CreateTaskPayload {
+    /** id задания, присвоенный сервером */
+    id: string;
+    /** Вопросы с серверными id (используются при редактировании) */
+    questions: Array<QuestionPayload & { id: string }>;
+}
+
+// ─── Внутренний стейт формы ───────────────────────────────────────────────────
+
+/**
+ * Вопрос в локальном стейте формы.
+ * localId нужен только для React key и операций удаления/тогла — на сервер не уходит.
+ * При редактировании существующего задания сюда дополнительно кладём serverId,
+ * чтобы PUT-запрос знал, какую запись обновлять.
+ */
+interface QuestionDraft {
+    localId: string;       // Date.now() — только для UI
+    serverId?: string;     // присваивается при загрузке задания с сервера
+    number: number;
+    question: string;
+    answer: string;
+    correct: boolean;
 }
 
 // ─── Мок-данные ──────────────────────────────────────────────────────────────
@@ -91,8 +125,8 @@ const MOCK_CATEGORY_CONFIGS: CategoryConfig[] = [
                 name: 'Сила нервной системы',
                 color: 'blue',
                 options: [
-                    { id: 'opt_strong', name: 'Сила'    },
-                    { id: 'opt_weak',   name: 'Слабость' },
+                    { id: 'opt_strong', name: 'Сила'     },
+                    { id: 'opt_weak',   name: 'Слабость'  },
                 ],
             },
             {
@@ -131,8 +165,8 @@ const MOCK_CATEGORY_CONFIGS: CategoryConfig[] = [
                 name: 'Прибыльность',
                 color: 'blue',
                 options: [
-                    { id: 'opt_profitable',     name: 'Прибыльный' },
-                    { id: 'opt_non_profitable',  name: 'Убыточный'  },
+                    { id: 'opt_profitable',    name: 'Прибыльный' },
+                    { id: 'opt_non_profitable', name: 'Убыточный'  },
                 ],
             },
             {
@@ -176,31 +210,52 @@ const COLOR_HIGHLIGHT: Record<string, string> = {
     blue:   'bg-blue-200 hover:bg-blue-300',
     yellow: 'bg-yellow-200 hover:bg-yellow-300',
     green:  'bg-green-200 hover:bg-green-300',
+    red:    'bg-red-200 hover:bg-red-300',
+    purple: 'bg-purple-200 hover:bg-purple-300',
+    pink:   'bg-pink-200 hover:bg-pink-300',
     undue:  'bg-gray-200 hover:bg-gray-300',
 };
 
 const COLOR_BUTTON: Record<string, string> = {
-    blue: 'bg-blue-500 hover:bg-blue-600',
+    blue:   'bg-blue-500 hover:bg-blue-600',
     yellow: 'bg-yellow-500 hover:bg-yellow-600',
-    green: 'bg-green-500 hover:bg-green-600',
-    red: 'bg-red-500 hover:bg-red-600',
+    green:  'bg-green-500 hover:bg-green-600',
+    red:    'bg-red-500 hover:bg-red-600',
     purple: 'bg-purple-500 hover:bg-purple-600',
-    pink: 'bg-pink-500 hover:bg-pink-600',
+    pink:   'bg-pink-500 hover:bg-pink-600',
 };
 
-// ─── Хелпер ──────────────────────────────────────────────────────────────────
+// ─── Хелперы ─────────────────────────────────────────────────────────────────
 
-/** Строит начальный словарь correctCharacteristics из списка характеристик */
 function buildInitialCorrectChars(chars: Characteristic[]): Record<string, string> {
     return Object.fromEntries(chars.map(c => [c.id, c.options[0].id]));
+}
+
+function draftFromServerQuestion(
+    q: TaskFormData['questions'][number],
+    index: number
+): QuestionDraft {
+    return {
+        localId:  q.id,   // при загрузке с сервера localId = serverId — не важно, главное уникальность
+        serverId: q.id,
+        number:   index + 1,
+        question: q.question,
+        answer:   q.answer,
+        correct:  q.correct,
+    };
 }
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
 
 interface TaskFormProps {
+    /** Если передан — форма в режиме редактирования */
     taskId?: string;
     closeModal: () => void;
-    onSave?: (data: TaskFormData) => void;
+    /**
+     * Вызывается с готовым payload перед закрытием.
+     * Caller сам решает: POST /api/tasks или PUT /api/tasks/:taskId.
+     */
+    onSave?: (payload: CreateTaskPayload) => void;
 }
 
 export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
@@ -213,22 +268,22 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
     const [taskText,    setTaskText]    = useState('');
     const [isTextMode,  setIsTextMode]  = useState(true);
 
-    // ── конфигурация выбранной категории (характеристики + варианты ответа) ──
+    // ── конфигурация выбранной категории ──
     const selectedCategory = categoryConfigs.find(c => c.id === categoryId) ?? null;
     const characteristics  = selectedCategory?.characteristics ?? [];
     const answerOptions    = selectedCategory?.answerOptions    ?? [];
 
-    // ── разметка текста ──
-    const [textMarkup, setTextMarkup] = useState<MarkupItem[]>([]);
+    // ── разметка текста (без id — сервер присвоит) ──
+    const [textMarkup, setTextMarkup] = useState<MarkupItemPayload[]>([]);
 
-    // ── правильные значения характеристик (charId → optionId) ──
+    // ── правильные значения характеристик ──
     const [correctCharacteristics, setCorrectCharacteristics] = useState<Record<string, string>>({});
 
-    // ── правильный итоговый ответ ──
+    // ── правильный ответ ──
     const [correctAnswerId, setCorrectAnswerId] = useState<number | null>(null);
 
-    // ── вопросы ──
-    const [questions,        setQuestions]        = useState<Question[]>([]);
+    // ── вопросы в виде черновиков (localId — только для UI) ──
+    const [questions,        setQuestions]        = useState<QuestionDraft[]>([]);
     const [showQuestionForm, setShowQuestionForm] = useState(false);
     const [newQuestion,      setNewQuestion]      = useState({ question: '', answer: '' });
 
@@ -242,26 +297,24 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             setTextMarkup([]);
             return;
         }
-        // Пересчитываем правильные значения под новый набор характеристик
         setCorrectCharacteristics(buildInitialCorrectChars(selectedCategory.characteristics));
         setCorrectAnswerId(null);
-        // Старые category_slug в разметке больше не валидны для новой категории
+        // Старые category_slug в разметке невалидны для новой категории
         setTextMarkup([]);
     }, [categoryId]); // eslint-disable-line react-hooks/exhaustive-deps
-    //   ^ намеренно categoryId, а не selectedCategory (объект пересоздаётся каждый рендер)
 
     // ── загрузка при редактировании ──
     useEffect(() => {
         if (!taskId) return;
-        // TODO: загрузить задание и заполнить все стейты:
+        // TODO: загрузить задание с сервера и заполнить все стейты:
         //   const data: TaskFormData = await fetch(`/api/tasks/${taskId}`).then(r => r.json());
         //   setCategoryId(data.taskCategory);
         //   setComplexity(data.complexity);
         //   setTaskText(data.taskText);
-        //   setTextMarkup(data.textMarkup);
+        //   setTextMarkup(data.textMarkup);                                       // MarkupItemPayload[] — id нет
         //   setCorrectCharacteristics(data.correctCharacteristics);
         //   setCorrectAnswerId(data.correctAnswerId);
-        //   setQuestions(data.questions);
+        //   setQuestions(data.questions.map(draftFromServerQuestion));            // serverId сохраняем в черновик
         //   setIsTextMode(false);
     }, [taskId]);
 
@@ -314,6 +367,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                 alert('Не удалось определить позицию или фрагмент уже выделен');
                 return;
             }
+            // MarkupItemPayload — без id
             setTextMarkup(prev => [
                 ...prev,
                 { start: pos.start, end: pos.end, category_slug: categorySlug },
@@ -335,11 +389,9 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             if (mark.start > last)
                 nodes.push(<span key={`t-${last}`}>{taskText.slice(last, mark.start)}</span>);
 
-            // Цвет берём из характеристик текущей категории; 'undue' → серый
             const char     = characteristics.find(c => c.id === mark.category_slug);
             const colorKey = char ? char.color : 'undue';
-
-            const origIdx = textMarkup.findIndex(
+            const origIdx  = textMarkup.findIndex(
                 m => m.start === mark.start && m.end === mark.end && m.category_slug === mark.category_slug
             );
 
@@ -376,38 +428,37 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
         if (!newQuestion.question || !newQuestion.answer) { alert('Заполните вопрос и ответ'); return; }
         if (questions.length >= 9)                        { alert('Максимум 9 вопросов');      return; }
 
-        setQuestions(prev => [
-            ...prev,
-            {
-                id:       Date.now().toString(),
-                number:   prev.length + 1,
-                question: newQuestion.question,
-                answer:   newQuestion.answer,
-                correct:  false,
-            },
-        ]);
+        const draft: QuestionDraft = {
+            localId:  Date.now().toString(), // только для React key и UI-операций, на сервер не уходит
+            number:   questions.length + 1,
+            question: newQuestion.question,
+            answer:   newQuestion.answer,
+            correct:  false,
+        };
+
+        setQuestions(prev => [...prev, draft]);
         setNewQuestion({ question: '', answer: '' });
         setShowQuestionForm(false);
     };
 
-    const toggleCorrect = (id: string) => {
-        const q = questions.find(q => q.id === id);
+    const toggleCorrect = (localId: string) => {
+        const q = questions.find(q => q.localId === localId);
         if (!q) return;
         if (!q.correct && questions.filter(q => q.correct).length >= 3) {
             alert('Максимум 3 корректных вопроса');
             return;
         }
-        setQuestions(qs => qs.map(q => q.id === id ? { ...q, correct: !q.correct } : q));
+        setQuestions(qs => qs.map(q => q.localId === localId ? { ...q, correct: !q.correct } : q));
     };
 
-    const deleteQuestion = (id: string) => {
+    const deleteQuestion = (localId: string) => {
         if (!confirm('Удалить вопрос?')) return;
         setQuestions(qs =>
-            qs.filter(q => q.id !== id).map((q, i) => ({ ...q, number: i + 1 }))
+            qs.filter(q => q.localId !== localId).map((q, i) => ({ ...q, number: i + 1 }))
         );
     };
 
-    // ── сохранение ──
+    // ── сборка payload и сохранение ──
     const handleSave = () => {
         if (!categoryId || !complexity || !taskText || !correctAnswerId) {
             alert('Заполните все обязательные поля');
@@ -418,20 +469,26 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             return;
         }
 
-        const data: TaskFormData = {
-            id: taskId,
-            taskCategory: categoryId,
+        // Стрипаем localId и serverId — на сервер уходят только данные
+        const questionsPayload: QuestionPayload[] = questions.map(({ question, answer, correct }) => ({
+            question,
+            answer,
+            correct,
+        }));
+
+        const payload: CreateTaskPayload = {
+            taskCategory:          categoryId,
             complexity,
             taskText,
             characteristics,
             correctCharacteristics,
-            textMarkup,
+            textMarkup,            // MarkupItemPayload[] — без id
             answerOptions,
             correctAnswerId,
-            questions,
+            questions:             questionsPayload,
         };
 
-        onSave?.(data);
+        onSave?.(payload);
         closeModal();
     };
 
@@ -460,7 +517,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                     <h3 className="text-lg font-semibold mb-4 text-slate-800">Основная информация</h3>
                     <div className="grid grid-cols-2 gap-4">
 
-                        {/* Тип задания */}
                         {/* TODO: список категорий — из useQuery(['task-categories']) вместо categoryConfigs */}
                         <div>
                             <label className="block text-sm font-medium mb-2 text-slate-700">
@@ -478,7 +534,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                             </select>
                         </div>
 
-                        {/* Сложность */}
                         <div>
                             <label className="block text-sm font-medium mb-2 text-slate-700">
                                 Сложность <span className="text-red-500">*</span>
@@ -496,7 +551,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                         </div>
                     </div>
 
-                    {/* Превью конфигурации выбранной категории */}
+                    {/* Превью конфигурации категории */}
                     {selectedCategory && (
                         <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
                             <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
@@ -510,6 +565,9 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                             ${char.color === 'blue'   ? 'bg-blue-100 text-blue-700'     : ''}
                                             ${char.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' : ''}
                                             ${char.color === 'green'  ? 'bg-green-100 text-green-700'   : ''}
+                                            ${char.color === 'red'    ? 'bg-red-100 text-red-700'       : ''}
+                                            ${char.color === 'purple' ? 'bg-purple-100 text-purple-700' : ''}
+                                            ${char.color === 'pink'   ? 'bg-pink-100 text-pink-700'     : ''}
                                         `}
                                     >
                                         {char.name}
@@ -530,7 +588,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
 
                         <div className="grid grid-cols-2 gap-6">
 
-                            {/* Левая колонка — текст + правильный ответ */}
+                            {/* Левая колонка */}
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-slate-700">
                                     Текст задания <span className="text-red-500">*</span>
@@ -552,7 +610,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     </div>
                                 )}
 
-                                {/* Кнопки переключения режима */}
                                 <div className="flex gap-3 mt-3">
                                     {!isTextMode ? (
                                         <>
@@ -594,7 +651,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     )}
                                 </div>
 
-                                {/* Правильный ответ — варианты из текущей категории */}
                                 <div className="mt-6">
                                     <label className="block text-sm font-medium mb-2 text-slate-700">
                                         Правильный ответ <span className="text-red-500">*</span>
@@ -618,7 +674,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                 </div>
                             </div>
 
-                            {/* Правая колонка — панель выделения характеристик */}
+                            {/* Правая колонка — панель выделения */}
                             {showHighlightPanel && (
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-slate-700">
@@ -630,7 +686,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                             Выделите фрагменты текста слева, затем нажмите нужную кнопку:
                                         </p>
 
-                                        {/* Характеристики текущей категории */}
                                         {characteristics.map(char => (
                                             <div key={char.id} className="flex items-center gap-3">
                                                 <select
@@ -658,7 +713,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                             </div>
                                         ))}
 
-                                        {/* Лишние данные */}
                                         <div className="border-t border-slate-300 pt-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-1 px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg text-sm text-slate-700">
@@ -710,7 +764,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                 <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
                                     {questions.map(q => (
                                         <div
-                                            key={q.id}
+                                            key={q.localId}
                                             className={`grid grid-cols-12 gap-2 px-4 py-3 transition-colors items-center
                                                 ${q.correct ? 'bg-green-50' : 'hover:bg-slate-50'}`}
                                         >
@@ -721,14 +775,14 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                                 <input
                                                     type="checkbox"
                                                     checked={q.correct}
-                                                    onChange={() => toggleCorrect(q.id)}
+                                                    onChange={() => toggleCorrect(q.localId)}
                                                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                                                 />
                                             </div>
                                             <div className="col-span-1 text-right">
                                                 <button
                                                     type="button"
-                                                    onClick={() => deleteQuestion(q.id)}
+                                                    onClick={() => deleteQuestion(q.localId)}
                                                     className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -741,7 +795,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     ))}
                                 </div>
 
-                                {/* Счётчик корректных */}
                                 <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex items-center gap-1">
                                     <span className={`font-semibold ${questions.filter(q => q.correct).length === 3 ? 'text-green-600' : 'text-slate-700'}`}>
                                         {questions.filter(q => q.correct).length}
