@@ -1,7 +1,7 @@
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {
     categoryConfigFormRetrieve,
-    taskBankRetrieve,
+    taskBankRetrieve, taskDeleteDestroy,
     TaskFormCreate,
     tasksCreate,
     tasksRetrieve, tasksUpdateUpdate
@@ -69,6 +69,34 @@ export function useCreateTaskMutationQuery({ closeModal }: { closeModal: () => v
             queue.add({
                 title: 'Задание не была добавлена',
                 description: `Ошибка при добавлении задания: ${error}`,
+                type: 'error'
+            }, {
+                timeout: 3000
+            });
+        },
+    });
+}
+
+
+// Удаление задания
+export function useDeleteTaskMutationQuery() {
+    return useMutation({
+        mutationFn: (id: number) => taskDeleteDestroy(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries();
+
+            queue.add({
+                title: 'Задание успешно удален',
+                type: 'success'
+            }, {
+                timeout: 3000
+            });
+        },
+        onError: (error) => {
+            console.error("Ошибка при удалении задания:", error);
+
+            queue.add({
+                title: 'Ошибка при удалении задания',
                 type: 'error'
             }, {
                 timeout: 3000
