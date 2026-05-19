@@ -1,1 +1,1 @@
-export { useBankTaskListQuery, useCreateTaskMutationQuery, useTaskCategoriesQuery, useEditTaskMutationQuery, useTaskInfoQuery } from "./queries"
+export { useBankTaskListQuery, useCreateTaskMutationQuery, useTaskCategoriesQuery, useEditTaskMutationQuery, useTaskInfoQuery, useDeleteTaskMutationQuery } from "./queries"

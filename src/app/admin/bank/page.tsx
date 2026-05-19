@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import AdminLayout from '@/shared/layouts/AdminLayout';
 import { UiModal } from '@/shared/ui/UiModal';
 import { TaskForm } from '@/features/tasks/ui/TaskForm';
 import { Button } from '@/shared/ui/Button';
+import { useBankTaskList } from "@/features/admin/model/useBankTaskList";
 
 // ─── Типы API ─────────────────────────────────────────────────────────────────
 
-/** Одна задача из GET /api/task-bank/ */
 interface TaskItem {
     id: number;
     complexity: string;
@@ -17,7 +17,6 @@ interface TaskItem {
     task_text: string;
 }
 
-/** Группа задач одной категории из GET /api/task-bank/ */
 interface TaskGroup {
     category_id: number;
     category_slug: string;
@@ -39,104 +38,61 @@ const ROWS_PER_PAGE = 10;
 // ─── Компонент ────────────────────────────────────────────────────────────────
 
 export default function BankPage() {
-    // ── данные с сервера ──
-    const [taskGroups, setTaskGroups] = useState<TaskGroup[]>([]);
-    const [loading,    setLoading]    = useState(true);
-    const [error,      setError]      = useState<string | null>(null);
+    // Подключаем твой хук. Явно указываем тип для items, чтобы TS не ругался на any.
+    const {
+        items,
+        isLoading,
+        isError,
+        handleDeleteClinicalCase
+    } = useBankTaskList() as {
+        items: TaskGroup[];
+        isLoading: boolean;
+        isError: boolean;
+        handleDeleteClinicalCase: (id: number) => void;
+    };
 
-    // ── фильтрация и пагинация ──
+    // Состояния фильтрации и пагинации
     const [categoryFilter, setCategoryFilter] = useState('all');
-    const [currentPage,    setCurrentPage]    = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // ── загрузка списка задач ──
-    const loadTasks = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const res  = await fetch('http://localhost:8000/api/task-bank/');
-            const json = await res.json();
-            setTaskGroups(json.data ?? []);
-        } catch (err) {
-            console.error('Ошибка загрузки задач:', err);
-            setError('Не удалось загрузить задания. Попробуйте обновить страницу.');
-        } finally {
-            setLoading(false);
+    // Сброс страницы при изменении фильтра
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [categoryFilter]);
+
+    // 1. Формируем список категорий для селекта из пришедших групп
+    const categories = useMemo(() => {
+        if (!Array.isArray(items)) return [];
+        return items.map((group) => ({
+            slug: group.category_slug,
+            name: group.category_name,
+        }));
+    }, [items]);
+
+    // 2. Превращаем сгруппированную структуру в плоский отфильтрованный список задач
+    const filteredTasks = useMemo<TaskItem[]>(() => {
+        if (!Array.isArray(items)) return [];
+
+        // Если выбраны "Все задания" — собираем задачи из всех групп в один плоский массив
+        if (categoryFilter === 'all') {
+            return items.flatMap((group) => group.tasks || []);
         }
-    }, []);
 
-    useEffect(() => { loadTasks(); }, [loadTasks]);
+        // Если выбрана конкретная категория — берем задачи только из неё
+        const targetGroup = items.find((group) => group.category_slug === categoryFilter);
+        return targetGroup ? (targetGroup.tasks || []) : [];
+    }, [items, categoryFilter]);
 
-    // ── плоский список всех задач ──
-    const allTasks = useMemo(
-        () => taskGroups.flatMap(g => g.tasks),
-        [taskGroups]
-    );
+    // 3. Расчет общего количества страниц
+    const totalPages = useMemo(() => {
+        return Math.max(1, Math.ceil(filteredTasks.length / ROWS_PER_PAGE));
+    }, [filteredTasks]);
 
-    // ── список категорий для фильтра (из сгруппированных данных) ──
-    const categories = useMemo(
-        () => taskGroups.map(g => ({ slug: g.category_slug, name: g.category_name })),
-        [taskGroups]
-    );
-
-    // ── фильтрация ──
-    const filteredTasks = useMemo(() => {
-        if (categoryFilter === 'all') return allTasks;
-        const group = taskGroups.find(g => g.category_slug === categoryFilter);
-        return group?.tasks ?? [];
-    }, [categoryFilter, allTasks, taskGroups]);
-
-    // ── пагинация ──
-    const totalPages    = Math.max(1, Math.ceil(filteredTasks.length / ROWS_PER_PAGE));
-    const paginatedTasks = useMemo(() => {
-        const start = (currentPage - 1) * ROWS_PER_PAGE;
-        return filteredTasks.slice(start, start + ROWS_PER_PAGE);
+    // 4. Срез задач для текущей страницы с жесткой типизацией TaskItem[]
+    const paginatedTasks = useMemo<TaskItem[]>(() => {
+        const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+        return filteredTasks.slice(startIndex, startIndex + ROWS_PER_PAGE);
     }, [filteredTasks, currentPage]);
-
-    // Сброс страницы при смене фильтра
-    useEffect(() => { setCurrentPage(1); }, [categoryFilter]);
-
-    // ── обработчики ──
-    const handleDelete = async (taskId: number) => {
-        if (!confirm('Вы уверены, что хотите удалить это задание?')) return;
-        try {
-            // TODO: подключить DELETE /api/tasks/{id}/ когда появится на беке
-            console.log('Delete task:', taskId);
-            await loadTasks(); // перезагружаем список после удаления
-        } catch (err) {
-            console.error('Ошибка удаления:', err);
-        }
-    };
-
-    const handleSaveCreate = async (payload: Parameters<NonNullable<React.ComponentProps<typeof TaskForm>['onSave']>>[0]) => {
-        try {
-            const res = await fetch('http://localhost:8000/api/tasks/', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(payload),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            await loadTasks();
-        } catch (err) {
-            console.error('Ошибка создания задания:', err);
-        }
-    };
-
-    const handleSaveUpdate = async (
-        taskId: string,
-        payload: Parameters<NonNullable<React.ComponentProps<typeof TaskForm>['onSave']>>[0]
-    ) => {
-        try {
-            const res = await fetch(`/api/tasks/${taskId}/update/`, {
-                method:  'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(payload),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            await loadTasks();
-        } catch (err) {
-            console.error('Ошибка обновления задания:', err);
-        }
-    };
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
@@ -173,18 +129,15 @@ export default function BankPage() {
                         {({ close }) => (
                             <TaskForm
                                 closeModal={close}
-                                onSave={payload => {
-                                    handleSaveCreate(payload);
-                                    close();
-                                }}
+                                onSave={close} // Форма сама вызовет мутацию создания внутри себя и обновит кэш
                             />
                         )}
                     </UiModal>
                 </div>
             </div>
 
-            {/* Состояния загрузки / ошибки */}
-            {loading && (
+            {/* Состояния загрузки */}
+            {isLoading && (
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-16 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3 text-slate-500">
                         <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -196,20 +149,15 @@ export default function BankPage() {
                 </div>
             )}
 
-            {error && !loading && (
+            {/* Состояния ошибки */}
+            {isError && !isLoading && (
                 <div className="bg-white rounded-xl shadow-md border border-red-200 p-8 text-center">
-                    <p className="text-red-600 mb-4">{error}</p>
-                    <button
-                        onClick={loadTasks}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
-                    >
-                        Повторить
-                    </button>
+                    <p className="text-red-600">Произошла ошибка при загрузке банка заданий.</p>
                 </div>
             )}
 
             {/* Таблица */}
-            {!loading && !error && (
+            {!isLoading && !isError && (
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -225,7 +173,7 @@ export default function BankPage() {
                             <tbody className="divide-y divide-slate-200">
                             {paginatedTasks.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-12 text-center text-slate-400">
+                                    <td colSpan={5} className="px-4 py-12 text-center text-slate-400 italic">
                                         Заданий не найдено
                                     </td>
                                 </tr>
@@ -268,17 +216,14 @@ export default function BankPage() {
                                                         <TaskForm
                                                             taskId={String(task.id)}
                                                             closeModal={close}
-                                                            onSave={payload => {
-                                                                handleSaveUpdate(String(task.id), payload);
-                                                                close();
-                                                            }}
+                                                            onSave={close} // Форма сама выполнит апдейт и закроется
                                                         />
                                                     )}
                                                 </UiModal>
 
                                                 {/* Кнопка удаления */}
                                                 <Button
-                                                    onClick={() => handleDelete(task.id)}
+                                                    onClick={() => handleDeleteClinicalCase(task.id)}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     variant="secondary"
                                                 >
