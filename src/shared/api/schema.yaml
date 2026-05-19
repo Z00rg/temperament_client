@@ -484,6 +484,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/category-config/form/:
+    get:
+      operationId: category_config_form_retrieve
+      summary: GET /api/task-categories — конфиг всех категорий для формы создания
+        задачи
+      tags:
+      - Банк заданий (Admin)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCategoriesResponse'
+          description: ''
   /api/colors/{id}/:
     get:
       operationId: colors_retrieve
@@ -1638,6 +1652,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/task-bank/:
+    get:
+      operationId: task_bank_retrieve
+      summary: Список всех задач, сгруппированных по категориям
+      tags:
+      - Банк заданий (Admin)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskBankListResponse'
+          description: ''
+  /api/task-categories/:
+    get:
+      operationId: task_categories_retrieve
+      summary: GET /api/task-categories — конфиг всех категорий для формы создания
+        задачи
+      tags:
+      - Банк заданий (Admin)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCategoriesResponse'
+          description: ''
   /api/task-category/{id}/:
     get:
       operationId: task_category_retrieve
@@ -1938,6 +1979,105 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/tasks/:
+    post:
+      operationId: tasks_create
+      summary: POST /api/tasks — создать задачу
+      tags:
+      - Банк заданий (Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskFormCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskFormCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskFormCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskFormCreateResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/tasks/{id}/:
+    get:
+      operationId: tasks_retrieve
+      summary: GET /api/tasks/:taskId — задача для формы редактирования
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Банк заданий (Admin)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskFormDetailResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/tasks/{id}/update/:
+    put:
+      operationId: tasks_update_update
+      summary: PUT /api/tasks/:taskId — обновить задачу (вопросы пересоздаются целиком)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Банк заданий (Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskFormCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskFormCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskFormCreate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskFormUpdateResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/tasks/control/random/:
     get:
       operationId: tasks_control_random_retrieve
@@ -2026,6 +2166,16 @@ components:
       required:
       - id
       - text
+    AnswerOptionSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+      required:
+      - id
+      - text
     AnswerOut:
       type: object
       properties:
@@ -2057,6 +2207,26 @@ components:
       - detail_description
       - id
       - short_description
+    CategoryConfigSchema:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        characteristics:
+          type: array
+          items:
+            $ref: '#/components/schemas/CharacteristicSchema'
+        answerOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerOptionSchema'
+      required:
+      - answerOptions
+      - characteristics
+      - id
+      - name
     CategoryMarkup:
       type: object
       properties:
@@ -2084,6 +2254,16 @@ components:
       - slug
       - style
       - task_category
+    CharOptionSchema:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
     CharacteristicInTask:
       type: object
       properties:
@@ -2130,6 +2310,24 @@ components:
       - correctCharacteristics
       - name
       - studentCharacteristics
+    CharacteristicSchema:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/CharOptionSchema'
+      required:
+      - color
+      - id
+      - name
+      - options
     ColorsMarkup:
       type: object
       properties:
@@ -2340,6 +2538,19 @@ components:
       - end
       - start
       - style
+    MarkupItemSchema:
+      type: object
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+        category_slug:
+          type: string
+      required:
+      - category_slug
+      - end
+      - start
     MarkupOption:
       type: object
       properties:
@@ -2688,6 +2899,22 @@ components:
       - answer
       - id
       - question
+    QuestionOutSchema:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+        correct:
+          type: boolean
+      required:
+      - answer
+      - correct
+      - id
+      - question
     RoleEnum:
       enum:
       - SUPERADMIN
@@ -2756,12 +2983,16 @@ components:
         last_grade:
           type: string
           readOnly: true
+        last_category:
+          type: string
+          readOnly: true
         attempts:
           type: string
           readOnly: true
       required:
       - attempts
       - group
+      - last_category
       - last_end
       - last_grade
       - last_spent
@@ -2940,6 +3171,67 @@ components:
       - id
       - task
       - text
+    TaskBankGroupSchema:
+      type: object
+      properties:
+        category_id:
+          type: integer
+        category_slug:
+          type: string
+        category_name:
+          type: string
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskBankItemSchema'
+      required:
+      - category_id
+      - category_name
+      - category_slug
+      - tasks
+    TaskBankItemSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+        complexity:
+          type: string
+        complexity_id:
+          type: integer
+        task_category:
+          type: string
+        task_text:
+          type: string
+      required:
+      - complexity
+      - complexity_id
+      - id
+      - task_category
+      - task_text
+    TaskBankListResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskBankGroupSchema'
+      required:
+      - data
+      - ok
+    TaskCategoriesResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryConfigSchema'
+      required:
+      - data
+      - ok
     TaskCategoryCRUD:
       type: object
       properties:
@@ -2974,6 +3266,109 @@ components:
       - id
       - level
       - name
+    TaskDetailSchema:
+      type: object
+      properties:
+        id:
+          type: string
+        taskCategory:
+          type: string
+        complexity:
+          type: string
+        taskText:
+          type: string
+        characteristics:
+          type: array
+          items:
+            $ref: '#/components/schemas/CharacteristicSchema'
+        correctCharacteristics:
+          type: object
+          additionalProperties:
+            type: string
+        textMarkup:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkupItemSchema'
+        answerOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerOptionSchema'
+        correctAnswerId:
+          type: integer
+          nullable: true
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionOutSchema'
+      required:
+      - answerOptions
+      - characteristics
+      - complexity
+      - correctAnswerId
+      - correctCharacteristics
+      - id
+      - questions
+      - taskCategory
+      - taskText
+      - textMarkup
+    TaskFormCreate:
+      type: object
+      properties:
+        taskCategory:
+          type: string
+        complexity:
+          type: string
+        taskText:
+          type: string
+        correctCharacteristics:
+          type: object
+          additionalProperties:
+            type: string
+        textMarkup:
+          type: array
+          items:
+            $ref: '#/components/schemas/_MarkupIn'
+        correctAnswerId:
+          type: integer
+          nullable: true
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/_QuestionIn'
+      required:
+      - complexity
+      - taskCategory
+      - taskText
+    TaskFormCreateResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/TaskDetailSchema'
+      required:
+      - data
+      - ok
+    TaskFormDetailResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/TaskDetailSchema'
+      required:
+      - data
+      - ok
+    TaskFormUpdateResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/TaskDetailSchema'
+      required:
+      - data
+      - ok
     TaskQuestionAdmin:
       type: object
       properties:
@@ -3065,3 +3460,29 @@ components:
       - patronymic
       - role
       - surname
+    _MarkupIn:
+      type: object
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+        category_slug:
+          type: string
+      required:
+      - category_slug
+      - end
+      - start
+    _QuestionIn:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+        correct:
+          type: boolean
+          default: false
+      required:
+      - answer
+      - question

@@ -15,7 +15,7 @@ export default function AdminLayout({ children, activeTab, user }: AdminLayoutPr
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
             {/* Header */}
-            <UiHeader isAdmin={true} user={user} />
+            <UiHeader isAdmin={true}/>
 
             {/* Admin Navigation Tabs */}
             <AdminNavigation activeTab={activeTab} />

@@ -52,7 +52,7 @@ export function UiHeader({isAdmin = false}: UiHeaderProps) {
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm text-slate-600">Студент:</span>
                                             <span className="font-semibold text-slate-800">
-                                                {useProfile.data.surname} {useProfile.data.name} {useProfile.data.patronymic}
+                                                {useProfile.data.surname} {useProfile.data.data.name} {useProfile.data.patronymic}
                                             </span>
                                         </div>
                                         {useProfile.data.group && (
