@@ -1,1 +1,1 @@
-import { useStatementsQuery } from "./queries"
+export { useStatementsListQuery } from "./queries"

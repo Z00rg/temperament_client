@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import AdminLayout from '@/shared/layouts/AdminLayout';
+import { useStatementsList } from "@/features/admin/model/useStatementsList";
 
 // ─── Типы API ─────────────────────────────────────────────────────────────────
 
-/**
- * GET http://localhost:8000/api/admin/submissions/all/
- * Сводная таблица: все студенты со сданными попытками
- */
 interface SubmissionRow {
     student_fio:   string;
     group:         string;
@@ -17,19 +14,11 @@ interface SubmissionRow {
     last_spent:    string;
     last_grade:    string;
     last_category: string;
-    /**
-     * Сервер возвращает строку — либо JSON-массив '["121","122"]',
-     * либо comma-separated "121,122". Парсим в parseAttempts().
-     */
     attempts: string;
 }
 
 // ─── Хелперы ─────────────────────────────────────────────────────────────────
 
-/**
- * Безопасно парсит attempts из строки в string[].
- * Поддерживает JSON-массив и comma-separated формат.
- */
 function parseAttempts(raw: string): string[] {
     if (!raw || raw.trim() === '') return [];
     try {
@@ -72,68 +61,61 @@ const ROWS_PER_PAGE = 10;
 // ─── Компонент ────────────────────────────────────────────────────────────────
 
 export default function StatementsPage() {
-    // ── данные ──
-    const [rows,    setRows]    = useState<SubmissionRow[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error,   setError]   = useState<string | null>(null);
+    // Подключаем хук. Если в нем есть refetch, можно вытащить его для кнопки "Повторить"
+    const { items = [], isLoading, isError, refetch } = useStatementsList() as any;
 
-    // ── фильтры ──
-    const [groupFilter,    setGroupFilter]    = useState('');
-    const [studentFilter,  setStudentFilter]  = useState('');
+    // Состояния для фильтрации
+    const [groupFilter, setGroupFilter] = useState('');
+    const [studentFilter, setStudentFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
 
-    // ── пагинация ──
+    // Состояние пагинации
     const [currentPage, setCurrentPage] = useState(1);
 
-    // ── загрузка данных ──
-    const loadData = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const res  = await fetch('http://localhost:8000/api/admin/submissions/all/');
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data: SubmissionRow[] = await res.json();
-            setRows(data);
-        } catch (err) {
-            console.error('Ошибка загрузки ведомостей:', err);
-            setError('Не удалось загрузить данные. Попробуйте обновить страницу.');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    // Сброс страницы при изменении любого фильтра
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [groupFilter, studentFilter, categoryFilter]);
 
-    useEffect(() => { loadData(); }, [loadData]);
-
-    // ── список категорий для фильтра ──
+    // Уникальный список категорий для селекта (вытягиваем из пришедших данных)
     const categories = useMemo(() => {
-        const unique = Array.from(
-            new Set(rows.map(r => r.last_category).filter(Boolean))
-        );
-        return unique;
-    }, [rows]);
-
-    // ── фильтрация ──
-    const filteredRows = useMemo(() => {
-        const g = groupFilter.trim().toLowerCase();
-        const s = studentFilter.trim().toLowerCase();
-
-        return rows.filter(row => {
-            const matchGroup    = !g || row.group.toLowerCase().includes(g);
-            const matchStudent  = !s || row.student_fio.toLowerCase().includes(s);
-            const matchCategory = categoryFilter === 'all' || row.last_category === categoryFilter;
-            return matchGroup && matchStudent && matchCategory;
+        if (!Array.isArray(items)) return [];
+        const set = new Set<string>();
+        items.forEach((item: SubmissionRow) => {
+            if (item.last_category) set.add(item.last_category);
         });
-    }, [rows, groupFilter, studentFilter, categoryFilter]);
+        return Array.from(set);
+    }, [items]);
 
-    // ── пагинация ──
-    const totalPages     = Math.max(1, Math.ceil(filteredRows.length / ROWS_PER_PAGE));
-    const paginatedRows  = useMemo(() => {
-        const start = (currentPage - 1) * ROWS_PER_PAGE;
-        return filteredRows.slice(start, start + ROWS_PER_PAGE);
+    // Фильтрация исходного массива данных
+    const filteredRows = useMemo(() => {
+        if (!Array.isArray(items)) return [];
+
+        return items.filter((row: SubmissionRow) => {
+            const matchesGroup = row.group
+                ?.toLowerCase()
+                .includes(groupFilter.toLowerCase());
+
+            const matchesStudent = row.student_fio
+                ?.toLowerCase()
+                .includes(studentFilter.toLowerCase());
+
+            const matchesCategory = categoryFilter === 'all' || row.last_category === categoryFilter;
+
+            return matchesGroup && matchesStudent && matchesCategory;
+        });
+    }, [items, groupFilter, studentFilter, categoryFilter]);
+
+    // Расчет общего количества страниц
+    const totalPages = useMemo(() => {
+        return Math.max(1, Math.ceil(filteredRows.length / ROWS_PER_PAGE));
+    }, [filteredRows]);
+
+    // Срез данных для текущей страницы (пагинация)
+    const paginatedRows = useMemo(() => {
+        const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+        return filteredRows.slice(startIndex, startIndex + ROWS_PER_PAGE);
     }, [filteredRows, currentPage]);
-
-    // Сброс страницы при изменении фильтров
-    useEffect(() => { setCurrentPage(1); }, [groupFilter, studentFilter, categoryFilter]);
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
@@ -151,7 +133,7 @@ export default function StatementsPage() {
                             value={groupFilter}
                             onChange={e => setGroupFilter(e.target.value)}
                             placeholder="Напр: ЛД-301"
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none animate-none"
                         />
                     </div>
                     <div>
@@ -184,8 +166,8 @@ export default function StatementsPage() {
                 </div>
             </div>
 
-            {/* Состояния загрузки / ошибки */}
-            {loading && (
+            {/* Состояния загрузки */}
+            {isLoading && (
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 p-16 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3 text-slate-500">
                         <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -197,20 +179,23 @@ export default function StatementsPage() {
                 </div>
             )}
 
-            {error && !loading && (
+            {/* Состояния ошибки */}
+            {isError && !isLoading && (
                 <div className="bg-white rounded-xl shadow-md border border-red-200 p-8 text-center">
-                    <p className="text-red-600 mb-4">{error}</p>
-                    <button
-                        onClick={loadData}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
-                    >
-                        Повторить
-                    </button>
+                    <p className="text-red-600 mb-4">Произошла ошибка при загрузке данных.</p>
+                    {refetch && (
+                        <button
+                            onClick={() => refetch()}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                        >
+                            Повторить
+                        </button>
+                    )}
                 </div>
             )}
 
             {/* Таблица */}
-            {!loading && !error && (
+            {!isLoading && !isError && (
                 <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">

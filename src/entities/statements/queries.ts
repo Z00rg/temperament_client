@@ -1,14 +1,14 @@
 import {useQuery} from "@tanstack/react-query";
-import {taskBankRetrieve} from "@/shared/api/generated";
+import {adminSubmissionsAllList} from "@/shared/api/generated";
 
 const statementsListKey = ['statementsList'];
 
-// Запрос данных профиля для виджета
-export function useStatementsQuery() {
+// Запрос попыток для виджета
+export function useStatementsListQuery() {
 
     return useQuery({
         queryKey: statementsListKey,
-        queryFn: () => taskBankRetrieve(),
+        queryFn: () => adminSubmissionsAllList(),
         staleTime: 5 * 60 * 1000, // 5 минут
         retry: 0,
     });
