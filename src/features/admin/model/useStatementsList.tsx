@@ -10,16 +10,16 @@ export function useStatementsList() {
     // ========== Запрос данных ==========
     const statementsListQuery = useStatementsListQuery();
 
-    // Извлекаем список патологий (с fallback на пустой массив)
+    // Извлекаем список ведомостей (с fallback на пустой массив)
     const items = statementsListQuery.data ?? [];
 
     // ========== Обработчики ==========
     /**
-     * Навигация к странице детальной информации о патологии
-     * @param id - ID патологии
+     * Навигация к странице попытки
+     * @param id - ID попытки
      */
     const handleItemClick = (id: number) => {
-        router.push(`/pathology/${id}`);
+        router.push(`/estimation/${id}`);
     };
 
     // ========== Возвращаемые значения ==========
