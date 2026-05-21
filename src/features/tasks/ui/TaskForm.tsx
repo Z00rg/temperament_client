@@ -50,14 +50,6 @@ const COMPLEXITIES = [
     { id: '4', name: 'А-Б+' },
 ];
 
-// Словарь сложностей для отправки на бек цифрой
-const complexityMap: Record<string, number> = {
-    'А+Б-': 1,
-    'А+Б+': 2,
-    'А-Б-': 3,
-    'А-Б+': 4
-};
-
 const COLOR_HIGHLIGHT: Record<string, string> = {
     blue:   'bg-blue-200 hover:bg-blue-300',
     yellow: 'bg-yellow-200 hover:bg-yellow-300',
@@ -185,7 +177,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
     }, [categoryId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── производные флаги ──
-    const needsQuestions     = complexity === 'А-Б-' || complexity === 'А-Б+';
+    const needsQuestions     = complexity === '3' || complexity === '4';
     const showTextSection    = !!(categoryId && complexity);
     const showHighlightPanel = !isTextMode && !!taskText;
 
