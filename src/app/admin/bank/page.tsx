@@ -94,6 +94,8 @@ export default function BankPage() {
         return filteredTasks.slice(startIndex, startIndex + ROWS_PER_PAGE);
     }, [filteredTasks, currentPage]);
 
+    console.log(items);
+
     // ─────────────────────────────────────────────────────────────────────────
     return (
         <AdminLayout activeTab="bank">
@@ -214,7 +216,7 @@ export default function BankPage() {
                                                 >
                                                     {({ close }) => (
                                                         <TaskForm
-                                                            taskId={String(task.id)}
+                                                            taskId={task.id}
                                                             closeModal={close}
                                                             onSave={close} // Форма сама выполнит апдейт и закроется
                                                         />

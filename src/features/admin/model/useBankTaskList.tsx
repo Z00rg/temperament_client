@@ -9,7 +9,7 @@ export function useBankTaskList() {
     const deleteMutation = useDeleteTaskMutationQuery();
 
     // Извлекаем список ведомостей (с fallback на пустой массив)
-    const items = bankTaskListQuery.data ?? [];
+    const items = bankTaskListQuery.data?.data ?? [];
 
     // Удаление задания
     const handleDeleteClinicalCase = (id: number) => {

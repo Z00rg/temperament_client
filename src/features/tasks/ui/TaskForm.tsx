@@ -2,87 +2,34 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/shared/ui/Button';
+import {
+    useCreateTaskMutationQuery, useEditTaskMutationQuery,
+    useTaskCategoriesQuery,
+    useTaskInfoQuery,
+} from '@/entities/bank-tasks';
+import {
+    CategoryConfigSchema,
+    CharacteristicSchema, MarkupItemSchema,
+    TaskFormCreate,
+} from '@/shared/api/generated';
 
-// ─── Типы API ─────────────────────────────────────────────────────────────────
+// ─── Типы ─────────────────────────────────────────────────────────────────────
 
-interface CharacteristicOption {
-    id: string;
-    name: string;
-}
-
-interface Characteristic {
-    id: string;
-    name: string;
-    color: 'blue' | 'yellow' | 'green' | 'red' | 'purple' | 'pink';
-    options: CharacteristicOption[];
-}
-
-/**
- * GET /api/category-config/form/
- * Response: { ok: true, data: CategoryConfig[] }
- */
-interface CategoryConfig {
-    id: string;
-    name: string;
-    characteristics: Characteristic[];
-    answerOptions: Array<{ id: number; text: string }>;
-}
-
-/** Элемент разметки текста. Совпадает с textMarkup из API */
-interface MarkupItemPayload {
-    start: number;
-    end: number;
-    category_slug: string; // char.id | 'undue'
-}
-
-/** Вопрос без id — для отправки на сервер (POST/PUT) */
-interface QuestionPayload {
-    question: string;
-    answer: string;
-    correct: boolean;
-}
+// Используем типы из generated.ts напрямую — не дублируем локально.
+// CategoryConfigSchema.characteristics → CharacteristicSchema[] где color: string.
+// COLOR_HIGHLIGHT / COLOR_BUTTON / COLOR_BADGE индексируются string — всё корректно.
 
 /**
- * Тело POST /api/tasks/ и PUT /api/tasks/{id}/update/
- * characteristics и answerOptions сервер подтягивает сам по taskCategory — не шлём.
+ * Тело POST /api/tasks/ и PUT /api/tasks/{id}/update/.
+ * Совпадает с TaskFormCreate из generated.ts — реэкспортируем под удобным именем.
  */
-interface CreateTaskPayload {
-    taskCategory: string;
-    complexity: string;
-    taskText: string;
-    correctCharacteristics: Record<string, string>; // charId → optionId
-    textMarkup: MarkupItemPayload[];
-    correctAnswerId: number;
-    questions: QuestionPayload[];
-}
-
-/**
- * Ответ GET /api/tasks/{id}/ (data внутри { ok, data })
- * Сервер возвращает полную структуру с id и вложенными сущностями.
- */
-interface TaskResponse {
-    id: string;
-    taskCategory: string;
-    complexity: string;
-    taskText: string;
-    characteristics: Characteristic[];
-    correctCharacteristics: Record<string, string>;
-    textMarkup: MarkupItemPayload[];
-    answerOptions: Array<{ id: number; text: string }>;
-    correctAnswerId: number;
-    questions: Array<{
-        id: string; // серверный id, на клиенте используется как localId при загрузке
-        question: string;
-        answer: string;
-        correct: boolean;
-    }>;
-}
+export type CreateTaskPayload = TaskFormCreate;
 
 // ─── Внутренний стейт вопросов ────────────────────────────────────────────────
 
 /**
  * Черновик вопроса в UI.
- * localId нужен только для React key и операций в списке — на сервер не уходит.
+ * localId — только для React key и операций в списке, на сервер не уходит.
  * serverId заполняется при загрузке существующего задания.
  */
 interface QuestionDraft {
@@ -97,11 +44,19 @@ interface QuestionDraft {
 // ─── Вспомогательные константы ───────────────────────────────────────────────
 
 const COMPLEXITIES = [
-    { id: 'А+Б-', name: 'А+Б-' },
-    { id: 'А+Б+', name: 'А+Б+' },
-    { id: 'А-Б-', name: 'А-Б-' },
-    { id: 'А-Б+', name: 'А-Б+' },
+    { id: '1', name: 'А+Б-' },
+    { id: '2', name: 'А+Б+' },
+    { id: '3', name: 'А-Б-' },
+    { id: '4', name: 'А-Б+' },
 ];
+
+// Словарь сложностей для отправки на бек цифрой
+const complexityMap: Record<string, number> = {
+    'А+Б-': 1,
+    'А+Б+': 2,
+    'А-Б-': 3,
+    'А-Б+': 4
+};
 
 const COLOR_HIGHLIGHT: Record<string, string> = {
     blue:   'bg-blue-200 hover:bg-blue-300',
@@ -133,121 +88,91 @@ const COLOR_BADGE: Record<string, string> = {
 
 // ─── Хелперы ─────────────────────────────────────────────────────────────────
 
-function buildInitialCorrectChars(chars: Characteristic[]): Record<string, string> {
+function buildInitialCorrectChars(chars: CharacteristicSchema[]): Record<string, string> {
     return Object.fromEntries(chars.map(c => [c.id, c.options[0].id]));
-}
-
-function serverQuestionToDraft(
-    q: TaskResponse['questions'][number],
-    index: number
-): QuestionDraft {
-    return {
-        localId:  q.id,
-        serverId: q.id,
-        number:   index + 1,
-        question: q.question,
-        answer:   q.answer,
-        correct:  q.correct,
-    };
 }
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
 
 interface TaskFormProps {
-    taskId?: string;
+    taskId?: number;
     closeModal: () => void;
     onSave?: (payload: CreateTaskPayload) => void;
 }
 
 export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
-    // ── конфигурация категорий ──
-    const [categoryConfigs, setCategoryConfigs] = useState<CategoryConfig[]>([]);
-    const [configLoading,   setConfigLoading]   = useState(true);
+    // ── запросы через TanStack Query ──
+    const categoriesQuery = useTaskCategoriesQuery();
+    const taskInfoQuery   = useTaskInfoQuery(taskId!); // enabled только при наличии taskId (см. хук)
 
-    // ── базовые поля ──
+    // мутации редактирования/создания заданий
+    const useCreateTaskMutation  = useCreateTaskMutationQuery({closeModal});
+    const useEditTaskMutation = useEditTaskMutationQuery({closeModal});
+
+    const categoryConfigs: CategoryConfigSchema[] = categoriesQuery.data?.data ?? [];
+    const taskInfo = taskInfoQuery.data?.data;
+
+    const isLoading = categoriesQuery.isLoading || (!!taskId && taskInfoQuery.isLoading);
+
+    // ── базовые поля формы ──
     const [categoryId,  setCategoryId]  = useState('');
     const [complexity,  setComplexity]  = useState('');
     const [taskText,    setTaskText]    = useState('');
     const [isTextMode,  setIsTextMode]  = useState(true);
-
-    // ── загрузка задания (режим редактирования) ──
-    const [taskLoading, setTaskLoading] = useState(false);
-
-    // ── конфигурация выбранной категории ──
-    const selectedCategory = categoryConfigs.find(c => c.id === categoryId) ?? null;
-    const characteristics  = selectedCategory?.characteristics ?? [];
-    const answerOptions    = selectedCategory?.answerOptions   ?? [];
-
-    // ── разметка текста ──
-    const [textMarkup, setTextMarkup] = useState<MarkupItemPayload[]>([]);
-
-    // ── правильные значения характеристик ──
+    const [textMarkup,  setTextMarkup]  = useState<MarkupItemSchema[]>([]);
     const [correctCharacteristics, setCorrectCharacteristics] = useState<Record<string, string>>({});
-
-    // ── правильный ответ ──
     const [correctAnswerId, setCorrectAnswerId] = useState<number | null>(null);
-
-    // ── вопросы ──
     const [questions,        setQuestions]        = useState<QuestionDraft[]>([]);
     const [showQuestionForm, setShowQuestionForm] = useState(false);
     const [newQuestion,      setNewQuestion]      = useState({ question: '', answer: '' });
 
     const textRef = useRef<HTMLDivElement>(null);
 
-    // ── 1. Загрузка конфига категорий ──
+    // ── заполнение формы данными с сервера (режим редактирования) ──
+    // Используем ref чтобы заполнить форму ровно один раз — когда данные впервые пришли.
+    const taskInfoApplied = useRef(false);
     useEffect(() => {
-        const load = async () => {
-            try {
-                setConfigLoading(true);
-                const res  = await fetch('http://localhost:8000/api/category-config/form/');
-                const json = await res.json();
-                setCategoryConfigs(json.data ?? []);
-            } catch (err) {
-                console.error('Ошибка загрузки конфига категорий:', err);
-            } finally {
-                setConfigLoading(false);
-            }
-        };
-        load();
-    }, []);
+        if (!taskInfo || taskInfoApplied.current) return;
+        taskInfoApplied.current = true;
 
-    // ── 2. Загрузка задания для редактирования ──
+        setCategoryId(taskInfo.taskCategory);
+        setComplexity(taskInfo.complexity);
+        setTaskText(taskInfo.taskText);
+        setTextMarkup(taskInfo.textMarkup);
+        setCorrectCharacteristics(taskInfo.correctCharacteristics);
+        setCorrectAnswerId(taskInfo.correctAnswerId);
+        setQuestions(
+            taskInfo.questions.map((q, i) => ({
+                localId:  q.id,
+                serverId: q.id,
+                number:   i + 1,
+                question: q.question,
+                answer:   q.answer,
+                correct:  q.correct,
+            }))
+        );
+        setIsTextMode(false);
+    }, [taskInfo]);
+
+    // ── конфигурация выбранной категории ──
+    const selectedCategory: CategoryConfigSchema | null = categoryConfigs.find(c => c.id === categoryId) ?? null;
+    const characteristics: CharacteristicSchema[] = selectedCategory?.characteristics ?? [];
+    const answerOptions = selectedCategory?.answerOptions ?? [];
+
+    // ── сброс зависимых стейтов при явной смене категории пользователем ──
+    // Срабатывает на каждое изменение categoryId, но при первом применении
+    // данных с сервера мы уже проставляем correctCharacteristics атомарно в useEffect выше,
+    // поэтому здесь отслеживаем только пользовательские изменения через отдельный ref.
+    const userChangedCategory = useRef(false);
+    const handleCategoryChange = (id: string) => {
+        userChangedCategory.current = true;
+        setCategoryId(id);
+    };
+
     useEffect(() => {
-        if (!taskId) return;
+        if (!userChangedCategory.current) return;
+        userChangedCategory.current = false;
 
-        const load = async () => {
-            try {
-                setTaskLoading(true);
-                const res  = await fetch(`http://localhost:8000/api/tasks/${taskId}/`);
-                const json = await res.json();
-                const data: TaskResponse = json.data;
-
-                setCategoryId(data.taskCategory);
-                setComplexity(data.complexity);
-                setTaskText(data.taskText);
-                setTextMarkup(data.textMarkup);
-                setCorrectCharacteristics(data.correctCharacteristics);
-                setCorrectAnswerId(data.correctAnswerId);
-                setQuestions(data.questions.map(serverQuestionToDraft));
-                setIsTextMode(false);
-            } catch (err) {
-                console.error('Ошибка загрузки задания:', err);
-            } finally {
-                setTaskLoading(false);
-            }
-        };
-        load();
-    }, [taskId]);
-
-    // ── 3. Сброс зависимых стейтов при смене категории ──
-    // Срабатывает только при явном выборе пользователем, не при загрузке с сервера,
-    // т.к. при загрузке setCategoryId и setCorrectCharacteristics вызываются вместе атомарно.
-    const isInitialCategorySet = useRef(false);
-    useEffect(() => {
-        if (!isInitialCategorySet.current) {
-            isInitialCategorySet.current = true;
-            return;
-        }
         if (!selectedCategory) {
             setCorrectCharacteristics({});
             setCorrectAnswerId(null);
@@ -410,23 +335,28 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             return;
         }
 
-        // Стрипаем localId/serverId/number — на сервер уходят только данные
         const payload: CreateTaskPayload = {
-            taskCategory:          categoryId,
+            taskCategory: categoryId,
             complexity,
             taskText,
             correctCharacteristics,
             textMarkup,
             correctAnswerId,
+            // Стрипаем localId/serverId/number — на сервер уходят только данные
             questions: questions.map(({ question, answer, correct }) => ({ question, answer, correct })),
         };
 
         onSave?.(payload);
-        closeModal();
+
+        if (!taskId) {
+            useCreateTaskMutation.mutate(payload);
+        } else {
+            useEditTaskMutation.mutate({id: taskId, data: payload});
+        }
     };
 
-    // ── состояния загрузки ──
-    if (configLoading || taskLoading) {
+    // ── состояние загрузки ──
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center py-24">
                 <div className="flex flex-col items-center gap-3 text-slate-500">
@@ -434,7 +364,9 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
-                    <span className="text-sm">{taskLoading ? 'Загрузка задания...' : 'Загрузка конфигурации...'}</span>
+                    <span className="text-sm">
+                        {!!taskId && taskInfoQuery.isLoading ? 'Загрузка задания...' : 'Загрузка конфигурации...'}
+                    </span>
                 </div>
             </div>
         );
@@ -471,7 +403,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                             </label>
                             <select
                                 value={categoryId}
-                                onChange={e => setCategoryId(e.target.value)}
+                                onChange={e => handleCategoryChange(e.target.value)}
                                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Выберите тип</option>
@@ -598,7 +530,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     <div className="grid grid-cols-2 gap-2">
                                         {answerOptions.map(opt => (
                                             <button
-                                                key={opt.id}
                                                 type="button"
                                                 onClick={() => setCorrectAnswerId(opt.id)}
                                                 className={`px-4 py-2 rounded-lg font-medium border-2 transition-all text-sm
