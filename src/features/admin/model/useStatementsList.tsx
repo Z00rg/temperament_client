@@ -11,7 +11,7 @@ export function useStatementsList() {
     const statementsListQuery = useStatementsListQuery();
 
     // Извлекаем список ведомостей (с fallback на пустой массив)
-    const items = statementsListQuery.data ?? [];
+    const items = statementsListQuery.data?.data ?? null;
 
     // ========== Обработчики ==========
     /**
@@ -28,5 +28,6 @@ export function useStatementsList() {
         isLoading: statementsListQuery.isPending,   // Загрузка данных
         isError: statementsListQuery.isError,       // Ошибка загрузки
         handleClick: handleItemClick,          // Обработчик клика по элементу
+        refetch: statementsListQuery.refetch  // рефетч
     };
 }

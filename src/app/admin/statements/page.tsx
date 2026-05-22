@@ -14,33 +14,15 @@ interface SubmissionRow {
     last_spent:    string;
     last_grade:    string;
     last_category: string;
-    attempts: string;
+    attempts: Attempt[];
+}
+
+interface Attempt {
+    number: number;
+    id: number;
 }
 
 // ─── Хелперы ─────────────────────────────────────────────────────────────────
-
-function parseAttempts(raw: string): string[] {
-    if (!raw || raw.trim() === '') return [];
-    try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed.map(String);
-    } catch { /* не JSON — пробуем CSV */ }
-    return raw.split(',').map(s => s.trim()).filter(Boolean);
-}
-
-function formatDate(dateStr: string): string {
-    if (!dateStr) return '—';
-    try {
-        return new Date(dateStr).toLocaleString('ru-RU', {
-            day:    '2-digit',
-            month:  '2-digit',
-            year:   'numeric',
-            hour:   '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-        });
-    } catch { return '—'; }
-}
 
 interface GradeDisplay { text: string; color: string; }
 
@@ -62,7 +44,7 @@ const ROWS_PER_PAGE = 10;
 
 export default function StatementsPage() {
     // Подключаем хук. Если в нем есть refetch, можно вытащить его для кнопки "Повторить"
-    const { items = [], isLoading, isError, refetch } = useStatementsList() as any;
+    const { items, isLoading, isError, refetch } = useStatementsList();
 
     // Состояния для фильтрации
     const [groupFilter, setGroupFilter] = useState('');
@@ -222,7 +204,7 @@ export default function StatementsPage() {
                             ) : (
                                 paginatedRows.map((row, index) => {
                                     const gradeInfo  = getGradeDisplay(row.last_grade);
-                                    const attempts   = parseAttempts(row.attempts);
+                                    const attempts = Array.isArray(row.attempts) ? row.attempts : [];
 
                                     return (
                                         <tr key={index} className="hover:bg-slate-50 transition-colors">
@@ -245,10 +227,10 @@ export default function StatementsPage() {
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-center text-slate-600 text-sm">
-                                                {formatDate(row.last_start)}
+                                                {row.last_start}
                                             </td>
                                             <td className="px-4 py-3 text-center text-slate-600 text-sm">
-                                                {formatDate(row.last_end)}
+                                                {row.last_end}
                                             </td>
                                             <td className="px-4 py-3 text-center text-slate-700 font-mono">
                                                 {row.last_spent || '—'}
@@ -256,14 +238,14 @@ export default function StatementsPage() {
                                             <td className="px-4 py-3 text-center">
                                                 {attempts.length > 0 ? (
                                                     <div className="flex items-center justify-center gap-2">
-                                                        {attempts.map((id, i) => (
+                                                        {attempts.map((attempt: Attempt) => (
                                                             <a
-                                                                key={id}
-                                                                href={`/estimation/${id}`}
+                                                                key={attempt.id}
+                                                                href={`/estimation/${attempt.id}`}
                                                                 className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-semibold transition-colors"
-                                                                title={`Попытка ${i + 1} (id: ${id})`}
+                                                                title={`Попытка ${attempt.number} (id: ${attempt.id})`}
                                                             >
-                                                                {i + 1}
+                                                                {attempt.number}
                                                             </a>
                                                         ))}
                                                     </div>
