@@ -1,81 +1,12 @@
 'use client';
 
 import {useState, useEffect, useRef, useCallback, useMemo} from 'react';
-import {useRouter, useParams, useSearchParams} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import {Button} from '@/shared/ui/Button';
 import {UiHeader} from "@/shared/ui/ui-header";
 import {MarkupItemIn, SubmitRequest, TaskStudentSchema} from "@/shared/api/generated";
 import {useControlTaskQuery, useEducationTaskQuery} from "@/entities/task";
 import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
-
-// Тестовые данные задания (имитация ответа от бэка)
-// TODO: заменить на запрос с бека (уже написан в entities/task)
-const MOCK_TASK: TaskStudentSchema = {
-    id: 'task_123',
-    text: 'Студент Петров активно участвует в общественной жизни университета. Он быстро адаптируется к новым условиям и легко находит общий язык с окружающими. В стрессовых ситуациях сохраняет спокойствие и рассудительность. Его эмоции стабильны, он редко выходит из себя. При этом он может долго работать над одной задачей, проявляя упорство и настойчивость.',
-    characteristics: [
-        {
-            id: '1',
-            name: 'Сила нервной системы',
-            color: 'blue',
-            options: [
-                {id: '1', name: 'Сила'},
-                {id: '2', name: 'Слабость'},
-            ],
-        },
-        {
-            id: '2',
-            name: 'Уравновешенность',
-            color: 'yellow',
-            options: [
-                {id: '3', name: 'Уравновешенность'},
-                {id: '4', name: 'Неуравновешенность'},
-            ],
-        },
-        {
-            id: '3',
-            name: 'Подвижность',
-            color: 'green',
-            options: [
-                {id: '5', name: 'Подвижность'},
-                {id: '6', name: 'Инертность'},
-            ],
-        },
-    ],
-    questions: [
-        {
-            id: 'q1',
-            text: 'Как быстро включается в работу?',
-            answer: 'Студент быстро адаптируется к новым условиям',
-        },
-        {
-            id: 'q2',
-            text: 'Как проявляет себя в ответственных ситуациях?',
-            answer: 'В стрессовых ситуациях сохраняет спокойствие',
-        },
-        {
-            id: 'q3',
-            text: 'Какой у него характер?',
-            answer: 'Это не относится к определению темперамента',
-        },
-        {
-            id: 'q4',
-            text: 'Как он общается с людьми?',
-            answer: 'Легко находит общий язык с окружающими',
-        },
-        {
-            id: 'q5',
-            text: 'Какие у него увлечения?',
-            answer: 'Это не относится к определению темперамента',
-        },
-    ],
-    answerOptions: [
-        {id: 1, text: 'Флегматик'},
-        {id: 2, text: 'Сангвиник'},
-        {id: 3, text: 'Холерик'},
-        {id: 4, text: 'Меланхолик'},
-    ],
-};
 
 // Цвета для подсветки (используем Tailwind классы)
 const HIGHLIGHT_COLORS: Record<string, string> = {
@@ -97,19 +28,8 @@ const COMPLEXITY_NAMES: Record<number, string> = {
 
 export default function TaskPage() {
     const router = useRouter();
-    const params = useParams();
     const searchParams = useSearchParams();
 
-    // TODO: вытаскивать отсюда дату для тасков
-    // const useControlTask = useControlTaskQuery();
-    // const useEducationTask = useEducationTaskQuery();
-
-    // Сабмиты
-    const submitEducationTask = useSubmitEducationTaskMutation();
-    const submitControlTask = useSubmitControlTaskMutation();
-
-
-    // const categoryId = params.categoryId as string; // temperament или economic
     const mode = searchParams.get('mode') || 'control'; // training или control
     const complexityParam = searchParams.get('complexity'); // 1, 2, 3, 4
     const complexity = complexityParam ? parseInt(complexityParam) : null;
@@ -117,24 +37,53 @@ export default function TaskPage() {
     // Определяем режим тренировки
     const isTrainingMode = mode === 'training';
 
+    // Запросы данных задания
+    const controlTaskQuery = useControlTaskQuery();
+    const educationTaskQuery = useEducationTaskQuery();
+
+    // Сабмиты
+    const submitEducationTask = useSubmitEducationTaskMutation();
+    const submitControlTask = useSubmitControlTaskMutation();
+
+    // Получаем задание в зависимости от режима
+    const taskData: TaskStudentSchema | null = useMemo(() => {
+        if (isTrainingMode) {
+            const tasks = educationTaskQuery.data?.data;
+            if (!tasks) return null;
+            // Если указана сложность — берём задачу с нужным complexity_level, иначе первую
+            if (complexity) {
+                return tasks.find(t => t.complexity_level === complexity) ?? tasks[0] ?? null;
+            }
+            return tasks[0] ?? null;
+        } else {
+            return controlTaskQuery.data?.data ?? null;
+        }
+    }, [isTrainingMode, controlTaskQuery.data, educationTaskQuery.data, complexity]);
+
+    const isLoading = isTrainingMode ? educationTaskQuery.isLoading : controlTaskQuery.isLoading;
+    const isError = isTrainingMode ? educationTaskQuery.isError : controlTaskQuery.isError;
+
     // State
     const [timeLeft, setTimeLeft] = useState(600);
     const [startTime] = useState(new Date());
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-    const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+    const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
     const [chatbotAnswer, setChatbotAnswer] = useState('');
     const [textMarkup, setTextMarkup] = useState<MarkupItemIn[]>([]);
 
     // Динамические характеристики (выбранные значения)
-    const [selectedCharacteristics, setSelectedCharacteristics] = useState<
-        Record<string, string>
-    >(() => {
-        const initial: Record<string, string> = {};
-        MOCK_TASK.characteristics.forEach((char) => {
-            initial[char.id] = char.options[0].id;
-        });
-        return initial;
-    });
+    const [selectedCharacteristics, setSelectedCharacteristics] = useState<Record<string, string>>({});
+
+    // Инициализируем selectedCharacteristics когда taskData появляется
+    useEffect(() => {
+        if (taskData) {
+            const initial: Record<string, string> = {};
+            taskData.characteristics.forEach((char) => {
+                initial[char.id] = char.options[0]?.id ?? '';
+            });
+            setSelectedCharacteristics(initial);
+        }
+    }, [taskData]);
 
     const textRef = useRef<HTMLDivElement>(null);
     const [isSelecting, setIsSelecting] = useState(false);
@@ -155,13 +104,11 @@ export default function TaskPage() {
             const selectionText = selection?.toString().trim() || '';
             const hasSelection = selectionText.length > 0;
 
-            // Проверяем, что выделение внутри текстового блока задания
             const textContainer = textRef.current;
             if (hasSelection && selection && textContainer) {
                 const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
                 if (!range) return;
 
-                // Проверяем, что выделение внутри textContainer
                 const isInsideTextContainer = textContainer.contains(range.commonAncestorContainer);
 
                 if (!isInsideTextContainer) {
@@ -172,17 +119,14 @@ export default function TaskPage() {
 
             addDebug(`selectionchange event: hasSelection=${hasSelection}, text="${selectionText.substring(0, 30)}${selectionText.length > 30 ? '...' : ''}"`);
 
-            // Очищаем предыдущий тайм-аут
             if (selectionTimeoutRef.current) {
                 clearTimeout(selectionTimeoutRef.current);
             }
 
             if (hasSelection) {
-                // Есть выделение - блокируем обновление
                 addDebug('Setting isSelecting = true (blocking DOM update)');
                 setIsSelecting(true);
             } else {
-                // Выделение сброшено - разблокируем через небольшую задержку
                 addDebug('Selection cleared, scheduling isSelecting = false');
                 selectionTimeoutRef.current = setTimeout(() => {
                     addDebug('Setting isSelecting = false (allowing DOM update)');
@@ -228,19 +172,26 @@ export default function TaskPage() {
         return `${m}:${s}`;
     };
 
+    // Форматирование времени в HH:MM:SS для API
+    const formatTimeSpent = (totalSeconds: number): string => {
+        const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    };
+
     // Получение позиции выделенного текста в исходной строке
     const getTextPosition = useCallback(
         (selectedText: string): { start: number; end: number } | null => {
+            if (!taskData) return null;
             const trimmedSelection = selectedText.trim();
             if (!trimmedSelection) return null;
 
-            // Ищем вхождение в исходном тексте
             let startIndex = 0;
             const allMatches: number[] = [];
 
-            // Находим все возможные вхождения
             while (true) {
-                const index = MOCK_TASK.text.indexOf(trimmedSelection, startIndex);
+                const index = taskData.text.indexOf(trimmedSelection, startIndex);
                 if (index === -1) break;
                 allMatches.push(index);
                 startIndex = index + 1;
@@ -248,7 +199,6 @@ export default function TaskPage() {
 
             if (allMatches.length === 0) return null;
 
-            // Если только одно совпадение - используем его
             if (allMatches.length === 1) {
                 return {
                     start: allMatches[0],
@@ -256,7 +206,6 @@ export default function TaskPage() {
                 };
             }
 
-            // Если несколько совпадений, берем первое непересекающееся
             for (const matchStart of allMatches) {
                 const matchEnd = matchStart + trimmedSelection.length;
                 const hasOverlap = textMarkup.some(
@@ -271,10 +220,9 @@ export default function TaskPage() {
                 }
             }
 
-            // Если все совпадения пересекаются - возвращаем null
             return null;
         },
-        [textMarkup]
+        [textMarkup, taskData]
     );
 
     // Обработка выделения текста
@@ -297,59 +245,52 @@ export default function TaskPage() {
 
             if (!position) {
                 addDebug('❌ Failed to get position');
-                alert(
-                    'Не удалось определить позицию выделенного текста или фрагмент уже выделен'
-                );
+                alert('Не удалось определить позицию выделенного текста или фрагмент уже выделен');
                 return;
             }
 
             const {start, end} = position;
 
-            // Добавляем новое выделение
             const newMarkup: MarkupItemIn = {start, end, category_slug: categoryId};
             addDebug(`✅ Adding markup: ${JSON.stringify(newMarkup)}`);
             setTextMarkup((prev) => [...prev, newMarkup]);
 
-            // Сбрасываем выделение
             addDebug('Clearing selection');
             selection.removeAllRanges();
 
-            // Принудительно разрешаем обновление DOM
             addDebug('Force setting isSelecting = false');
             setIsSelecting(false);
         },
         [getTextPosition, addDebug]
     );
 
-    // Применение выделений к тексту - используем React элементы вместо dangerouslySetInnerHTML
+    // Применение выделений к тексту
     const renderTextWithHighlights = useMemo(() => {
+        if (!taskData) return null;
+
         if (!textMarkup.length) {
-            return <span>{MOCK_TASK.text}</span>;
+            return <span>{taskData.text}</span>;
         }
 
-        // Сортируем выделения по позиции начала
         const sortedMarkup = [...textMarkup].sort((a, b) => a.start - b.start);
 
         const elements: React.ReactNode[] = [];
         let lastIndex = 0;
 
         sortedMarkup.forEach((mark, sortedIndex) => {
-            // Добавляем текст до выделения
             if (mark.start > lastIndex) {
                 elements.push(
                     <span key={`text-${lastIndex}`}>
-            {MOCK_TASK.text.slice(lastIndex, mark.start)}
-          </span>
+                        {taskData.text.slice(lastIndex, mark.start)}
+                    </span>
                 );
             }
 
-            // Получаем цвет для категории
-            const characteristic = MOCK_TASK.characteristics.find(
+            const characteristic = taskData.characteristics.find(
                 (c) => c.id === mark.category_slug
             );
             const color = characteristic?.color || 'gray';
 
-            // Цветовые классы Tailwind
             const colorClasses: Record<string, string> = {
                 blue: 'bg-blue-200 hover:bg-blue-300',
                 yellow: 'bg-yellow-200 hover:bg-yellow-300',
@@ -360,14 +301,12 @@ export default function TaskPage() {
             };
 
             const highlightClass = colorClasses[color] || 'bg-gray-200 hover:bg-gray-300';
-            const highlightedPart = MOCK_TASK.text.slice(mark.start, mark.end);
+            const highlightedPart = taskData.text.slice(mark.start, mark.end);
 
-            // Находим оригинальный индекс в несортированном массиве
             const originalIndex = textMarkup.findIndex(
                 m => m.start === mark.start && m.end === mark.end && m.category_slug === mark.category_slug
             );
 
-            // Добавляем выделенный текст как React элемент
             elements.push(
                 <mark
                     key={`mark-${sortedIndex}`}
@@ -393,23 +332,21 @@ export default function TaskPage() {
             lastIndex = mark.end;
         });
 
-        // Добавляем оставшийся текст
-        if (lastIndex < MOCK_TASK.text.length) {
+        if (lastIndex < taskData.text.length) {
             elements.push(
                 <span key={`text-${lastIndex}`}>
-          {MOCK_TASK.text.slice(lastIndex)}
-        </span>
+                    {taskData.text.slice(lastIndex)}
+                </span>
             );
         }
 
         return <>{elements}</>;
-    }, [textMarkup]);
+    }, [textMarkup, taskData]);
 
-    // Выбор вопроса
-    const handleQuestionSelect = (questionId: string) => {
+    // Выбор вопроса (id теперь number)
+    const handleQuestionSelect = (questionId: number) => {
         if (selectedQuestions.includes(questionId)) {
-            // Показываем ответ повторно
-            const question = MOCK_TASK.questions.find((q) => q.id === questionId);
+            const question = taskData?.questions.find((q) => q.id === questionId);
             if (question) {
                 setChatbotAnswer(question.answer);
             }
@@ -421,7 +358,7 @@ export default function TaskPage() {
         }
 
         setSelectedQuestions((prev) => [...prev, questionId]);
-        const question = MOCK_TASK.questions.find((q) => q.id === questionId);
+        const question = taskData?.questions.find((q) => q.id === questionId);
         if (question) {
             setChatbotAnswer(question.answer);
         }
@@ -434,18 +371,16 @@ export default function TaskPage() {
 
     // Отправка формы
     const handleSubmit = async (manual: boolean = true) => {
-        // Валидация
+        if (!taskData) return;
+
         if (manual) {
-            // Проверяем, что выделено по каждой характеристике
-            const missingCategories = MOCK_TASK.characteristics.filter(
+            const missingCategories = taskData.characteristics.filter(
                 (char) => !textMarkup.some((mark) => mark.category_slug === char.id)
             );
 
             if (missingCategories.length > 0) {
                 const categoryNames = missingCategories.map((c) => c.name).join(', ');
-                alert(
-                    `Необходимо выделить текст по следующим критериям: ${categoryNames}`
-                );
+                alert(`Необходимо выделить текст по следующим критериям: ${categoryNames}`);
                 return;
             }
 
@@ -455,44 +390,68 @@ export default function TaskPage() {
             }
         }
 
-        // Подготовка данных для отправки
         const endTime = new Date();
-        const spentTime = Math.floor(
-            (endTime.getTime() - startTime.getTime()) / 1000
-        );
-        const minutes = Math.floor(spentTime / 60);
-        const seconds = spentTime % 60;
+        const spentSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
 
         const submissionData: SubmitRequest = {
-            task_id: MOCK_TASK.id,
-            time_spent: `${minutes.toString().padStart(2, '0')}:${seconds
-                .toString()
-                .padStart(2, '0')}`,
+            task_id: taskData.id,
+            time_spent: formatTimeSpent(spentSeconds),
             start_time: startTime.toISOString(),
             answer_markup: textMarkup,
             selected_question_ids: selectedQuestions,
             student_characteristics: selectedCharacteristics,
-            selected_answer_id: selectedAnswer!,
+            selected_answer_id: selectedAnswer ?? undefined,
         };
 
         console.log('Submitting data:', submissionData);
 
-        let estimationId: number = 1;
-
-        // TODO: Отправка на страничку просмотра попытки по id с бека
-        // if (isTrainingMode) {
-        //     // Режим обучения - без оценки
-        //     const data = await submitEducationTask.mutateAsync(submissionData);
-        //     estimationId = data.data.submission_id;
-        // } else {
-        //     // Режим контроля - сохраняем оценку
-        //     const data = await submitControlTask.mutateAsync(submissionData);
-        //     estimationId = data.data.submission_id;
-        // }
-
-        // Переход на страницу оценки с параметрами
-        router.push(`/estimation/${estimationId}`);
+        try {
+            if (isTrainingMode) {
+                //TODO: сделать переход по id. когда на беке добавят
+                const data = await submitEducationTask.mutateAsync(submissionData);
+                // У education нет submission_id — переходим без него или используем условный id
+                router.push(`/estimation/education`);
+            } else {
+                const data = await submitControlTask.mutateAsync(submissionData);
+                const estimationId = data.data.submission_id;
+                router.push(`/estimation/${estimationId}`);
+            }
+        } catch (error) {
+            console.error('Submit failed:', error);
+        }
     };
+
+    // Состояния загрузки и ошибки
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+                <UiHeader/>
+                <main className="container mx-auto px-6 py-8 flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"/>
+                        <p className="text-slate-600 text-lg">Загрузка задания...</p>
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
+    if (isError || !taskData) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+                <UiHeader/>
+                <main className="container mx-auto px-6 py-8 flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <p className="text-red-600 text-lg font-semibold mb-2">Не удалось загрузить задание</p>
+                        <p className="text-slate-500 mb-6">Попробуйте обновить страницу</p>
+                        <Button onPress={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold">
+                            Обновить
+                        </Button>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -544,7 +503,7 @@ export default function TaskPage() {
                             <div>
                                 <div className="font-semibold text-blue-800">Режим обучения</div>
                                 <div className="text-sm text-blue-600">
-                                    Сложность: {complexity ? COMPLEXITY_NAMES[complexity] : 'Не указана'}
+                                    Сложность: {taskData.complexity_level ? COMPLEXITY_NAMES[taskData.complexity_level] : 'Не указана'}
                                     {' • '}
                                     Результат не сохраняется в ведомость
                                 </div>
@@ -570,6 +529,10 @@ export default function TaskPage() {
                         <h2 className="text-lg font-bold text-slate-800 mb-4">
                             Условия задания
                         </h2>
+                        {/* Условие задания (condition) */}
+                        {taskData.condition && (
+                            <p className="text-sm text-slate-500 italic mb-3">{taskData.condition}</p>
+                        )}
                         <div
                             ref={textRef}
                             className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4 text-slate-700 leading-relaxed min-h-[300px] cursor-text select-text"
@@ -608,7 +571,7 @@ export default function TaskPage() {
                         </h2>
 
                         <div className="space-y-4">
-                            {MOCK_TASK.characteristics.map((characteristic) => {
+                            {taskData.characteristics.map((characteristic) => {
                                 const colorClass =
                                     HIGHLIGHT_COLORS[characteristic.color] || 'bg-gray-200';
                                 const buttonColorMap: Record<string, string> = {
@@ -630,7 +593,7 @@ export default function TaskPage() {
                                         </label>
                                         <div className="flex items-center gap-4">
                                             <select
-                                                value={selectedCharacteristics[characteristic.id]}
+                                                value={selectedCharacteristics[characteristic.id] ?? ''}
                                                 onChange={(e) =>
                                                     setSelectedCharacteristics((prev) => ({
                                                         ...prev,
@@ -682,7 +645,7 @@ export default function TaskPage() {
                     </h2>
 
                     <div className="flex flex-wrap gap-2 mb-4">
-                        {MOCK_TASK.questions.map((question) => {
+                        {taskData.questions.map((question) => {
                             const isSelected = selectedQuestions.includes(question.id);
                             const isDisabled = !isSelected && selectedQuestions.length >= 3;
 
@@ -724,7 +687,7 @@ export default function TaskPage() {
                         Укажите, какой тип темперамента описан в задаче
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {MOCK_TASK.answerOptions.map((option) => (
+                        {taskData.answerOptions.map((option) => (
                             <button
                                 key={option.id}
                                 onClick={() => setSelectedAnswer(option.id)}
@@ -747,9 +710,12 @@ export default function TaskPage() {
                 <div className="flex justify-center">
                     <Button
                         onPress={() => handleSubmit(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl"
+                        isDisabled={submitControlTask.isPending || submitEducationTask.isPending}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Проверить
+                        {(submitControlTask.isPending || submitEducationTask.isPending)
+                            ? 'Отправка...'
+                            : 'Проверить'}
                     </Button>
                 </div>
             </main>
