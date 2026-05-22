@@ -6,12 +6,12 @@ import {
 const estimationKey = (id: number) => ["estimation", id];
 
 // Запрос данных для странички оценки
-export function useEstimationQuery(estimationId: number) {
+export function useEstimationQuery(estimationId: number, enabled: boolean) {
 
     return useQuery({
         queryKey: estimationKey(estimationId),
         queryFn: () => submissionsRetrieve(estimationId),
-        enabled: !!estimationId,
+        enabled: enabled,
         staleTime: 60 * 60 * 1000, // 60 минут
         retry: 0,
     });

@@ -1,51 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
 import { UiHeader } from '@/shared/ui/ui-header';
 import { useEstimationQuery } from '@/entities/estimation'; // путь к хуку
 import {
-    EvaluationResult,
     MarkupItemOut,
-    CharacteristicResult,
     QuestionOut,
 } from '@/shared/api/generated';
-
-// ─── Мок-данные (структура соответствует EvaluationResult) ───────────────────
-const MOCK_EVALUATION: EvaluationResult = {
-    grade: 'Хорошо',
-    spent_time: '08:45',
-    text: 'Студент Петров активно участвует в общественной жизни университета. Он быстро адаптируется к новым условиям и легко находит общий язык с окружающими. В стрессовых ситуациях сохраняет спокойствие и рассудительность. Его эмоции стабильны, он редко выходит из себя. При этом он может долго работать над одной задачей, проявляя упорство и настойчивость.',
-    studentAnswer: { id: 2, text: 'Сангвиник' },
-    correctAnswer: { id: 1, text: 'Флегматик' },
-    studentMarkup: [
-        { start: 15,  end: 45,  style: 'bg-blue-200' },
-        { start: 170, end: 200, style: 'bg-yellow-200' },
-        { start: 116, end: 145, style: 'bg-green-200' },
-    ],
-    correctMarkup: [
-        { start: 15,  end: 62,  style: 'bg-blue-200' },
-        { start: 170, end: 230, style: 'bg-yellow-200' },
-        { start: 85,  end: 145, style: 'bg-green-200' },
-        // «Лишние данные» — это отдельная характеристика только в эталоне
-        { start: 245, end: 295, style: 'bg-orange-200' },
-    ],
-    studentQuestions: [
-        { id: 3, question: 'Как он общается с людьми?',           answer: 'Легко находит общий язык с окружающими' },
-    ],
-    correctQuestions: [
-        { id: 1, question: 'Как быстро включается в работу?',     answer: 'Студент быстро адаптируется к новым условиям' },
-        { id: 2, question: 'Как проявляет себя в ответственных ситуациях?', answer: 'В стрессовых ситуациях сохраняет спокойствие' },
-        { id: 3, question: 'Как он общается с людьми?',           answer: 'Легко находит общий язык с окружающими' },
-    ],
-    characteristics: [
-        { name: 'Сила нервной системы', color: 'blue',   studentCharacteristics: 'Сила',           correctCharacteristics: 'Сила' },
-        { name: 'Уравновешенность',     color: 'yellow', studentCharacteristics: 'Уравновешенность', correctCharacteristics: 'Уравновешенность' },
-        { name: 'Подвижность',          color: 'green',  studentCharacteristics: 'Подвижность',     correctCharacteristics: 'Инертность' },
-    ],
-};
-// ─────────────────────────────────────────────────────────────────────────────
 
 // Цвет оценки
 function gradeColor(grade: string) {
@@ -96,16 +58,19 @@ export default function EstimationPage() {
     const params = useParams();
 
     // id попытки из URL: /estimation/[id]
-    const estimationId = Number(params.id);
+    // TODO: баг - некорректный динамический параметр в ссылке
+    const rawId = params?.id;
 
-    // TODO: раскомментировать когда бэк готов; пока падаем на мок ниже
-    // const { data: response, isLoading, isError } = useEstimationQuery(estimationId);
-    // const data: EvaluationResult | undefined = response?.data;
+    const idString = Array.isArray(rawId) ? rawId[0] : rawId;
 
-    // Временно: всегда используем мок
-    const isLoading = false;
-    const isError = false;
-    const data: EvaluationResult = MOCK_EVALUATION;
+    const estimationId = idString ? parseInt(idString, 10) : 0;
+
+    const isValidId = Boolean(estimationId && !isNaN(estimationId));
+
+    const useEstimation = useEstimationQuery(estimationId, isValidId);
+    const data = useEstimation?.data?.data;
+    const isLoading = useEstimation.isPending;
+    const isError = useEstimation.isError;
 
     // ── Loading / Error ────────────────────────────────────────────────────────
     if (isLoading) {
