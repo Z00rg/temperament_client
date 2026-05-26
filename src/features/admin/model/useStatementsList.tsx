@@ -11,7 +11,7 @@ export function useStatementsList() {
     const statementsListQuery = useStatementsListQuery();
 
     // Извлекаем список ведомостей (с fallback на пустой массив)
-    const items = statementsListQuery.data?.data ?? null;
+    const items = statementsListQuery.data ?? null;
 
     // ========== Обработчики ==========
     /**

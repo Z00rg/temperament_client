@@ -8,14 +8,24 @@ import {MarkupItemIn, SubmitRequest, TaskStudentSchema} from "@/shared/api/gener
 import {useControlTaskQuery, useEducationTaskQuery} from "@/entities/task";
 import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
 
-// Цвета для подсветки (используем Tailwind классы)
-const HIGHLIGHT_COLORS: Record<string, string> = {
-    blue: 'bg-blue-200',
-    yellow: 'bg-yellow-200',
-    green: 'bg-green-200',
-    red: 'bg-red-200',
-    purple: 'bg-purple-200',
-    pink: 'bg-pink-200',
+// ─── Цветовые маппинги (по ключу) ────────────────────────────────────────────
+
+const COLOR_HIGHLIGHT: Record<string, string> = {
+    blue:   'bg-blue-200 hover:bg-blue-300',
+    yellow: 'bg-yellow-200 hover:bg-yellow-300',
+    green:  'bg-green-200 hover:bg-green-300',
+    red:    'bg-red-200 hover:bg-red-300',
+    purple: 'bg-purple-200 hover:bg-purple-300',
+    pink:   'bg-pink-200 hover:bg-pink-300',
+};
+
+const COLOR_BUTTON: Record<string, string> = {
+    blue:   'bg-blue-500 hover:bg-blue-600',
+    yellow: 'bg-yellow-500 hover:bg-yellow-600',
+    green:  'bg-green-500 hover:bg-green-600',
+    red:    'bg-red-500 hover:bg-red-600',
+    purple: 'bg-purple-500 hover:bg-purple-600',
+    pink:   'bg-pink-500 hover:bg-pink-600',
 };
 
 // Маппинг сложности
@@ -26,31 +36,36 @@ const COMPLEXITY_NAMES: Record<number, string> = {
     4: 'А-Б+',
 };
 
+// ─── Хелпер нормализации цвета ───────────────────────────────────────────────
+// Принимает как "blue", так и "bg-blue-200" — возвращает всегда "blue"
+
+function extractColorKey(color: string): string {
+    const match = color?.match(/bg-(\w+)-\d+/);
+    return match ? match[1] : (color ?? '');
+}
+
+// ─── Компонент ────────────────────────────────────────────────────────────────
+
 export default function TaskPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const mode = searchParams.get('mode') || 'control'; // training или control
-    const complexityParam = searchParams.get('complexity'); // 1, 2, 3, 4
+    const mode = searchParams.get('mode') || 'control';
+    const complexityParam = searchParams.get('complexity');
     const complexity = complexityParam ? parseInt(complexityParam) : null;
 
-    // Определяем режим тренировки
     const isTrainingMode = mode === 'training';
 
-    // Запросы данных задания
     const controlTaskQuery = useControlTaskQuery();
     const educationTaskQuery = useEducationTaskQuery();
 
-    // Сабмиты
     const submitEducationTask = useSubmitEducationTaskMutation();
     const submitControlTask = useSubmitControlTaskMutation();
 
-    // Получаем задание в зависимости от режима
     const taskData: TaskStudentSchema | null = useMemo(() => {
         if (isTrainingMode) {
             const tasks = educationTaskQuery.data;
             if (!tasks) return null;
-            // Если указана сложность — берём задачу с нужным complexity_level, иначе первую
             if (complexity) {
                 return tasks.find((t: { complexity_level: number; }) => t.complexity_level === complexity) ?? tasks[0] ?? null;
             }
@@ -63,18 +78,14 @@ export default function TaskPage() {
     const isLoading = isTrainingMode ? educationTaskQuery.isLoading : controlTaskQuery.isLoading;
     const isError = isTrainingMode ? educationTaskQuery.isError : controlTaskQuery.isError;
 
-    // State
     const [timeLeft, setTimeLeft] = useState(600);
     const [startTime] = useState(new Date());
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
     const [chatbotAnswer, setChatbotAnswer] = useState('');
     const [textMarkup, setTextMarkup] = useState<MarkupItemIn[]>([]);
-
-    // Динамические характеристики (выбранные значения)
     const [selectedCharacteristics, setSelectedCharacteristics] = useState<Record<string, string>>({});
 
-    // Инициализируем selectedCharacteristics когда taskData появляется
     useEffect(() => {
         if (taskData) {
             const initial: Record<string, string> = {};
@@ -90,14 +101,12 @@ export default function TaskPage() {
     const selectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
-    // Функция для добавления отладочной информации
     const addDebug = useCallback((message: string) => {
         const timestamp = new Date().toLocaleTimeString();
         console.log(`[${timestamp}] ${message}`);
         setDebugInfo(prev => [...prev.slice(-9), `[${timestamp}] ${message}`]);
     }, []);
 
-    // Отслеживание активного выделения
     useEffect(() => {
         const handleSelectionChange = () => {
             const selection = window.getSelection();
@@ -108,9 +117,7 @@ export default function TaskPage() {
             if (hasSelection && selection && textContainer) {
                 const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
                 if (!range) return;
-
                 const isInsideTextContainer = textContainer.contains(range.commonAncestorContainer);
-
                 if (!isInsideTextContainer) {
                     addDebug('⚠️ Selection outside task text area, ignoring');
                     return;
@@ -147,7 +154,6 @@ export default function TaskPage() {
         };
     }, [addDebug]);
 
-    // Таймер
     useEffect(() => {
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
@@ -163,16 +169,12 @@ export default function TaskPage() {
         return () => clearInterval(timer);
     }, []);
 
-    // Форматирование времени
     const formatTime = (seconds: number) => {
-        const m = Math.floor(seconds / 60)
-            .toString()
-            .padStart(2, '0');
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
         const s = (seconds % 60).toString().padStart(2, '0');
         return `${m}:${s}`;
     };
 
-    // Форматирование времени в HH:MM:SS для API
     const formatTimeSpent = (totalSeconds: number): string => {
         const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
         const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -180,7 +182,6 @@ export default function TaskPage() {
         return `${h}:${m}:${s}`;
     };
 
-    // Получение позиции выделенного текста в исходной строке
     const getTextPosition = useCallback(
         (selectedText: string): { start: number; end: number } | null => {
             if (!taskData) return null;
@@ -200,10 +201,7 @@ export default function TaskPage() {
             if (allMatches.length === 0) return null;
 
             if (allMatches.length === 1) {
-                return {
-                    start: allMatches[0],
-                    end: allMatches[0] + trimmedSelection.length,
-                };
+                return { start: allMatches[0], end: allMatches[0] + trimmedSelection.length };
             }
 
             for (const matchStart of allMatches) {
@@ -214,9 +212,8 @@ export default function TaskPage() {
                         (matchEnd > mark.start && matchEnd <= mark.end) ||
                         (matchStart <= mark.start && matchEnd >= mark.end)
                 );
-
                 if (!hasOverlap) {
-                    return {start: matchStart, end: matchEnd};
+                    return { start: matchStart, end: matchEnd };
                 }
             }
 
@@ -225,7 +222,6 @@ export default function TaskPage() {
         [textMarkup, taskData]
     );
 
-    // Обработка выделения текста
     const handleHighlight = useCallback(
         (categoryId: string) => {
             addDebug(`🖱️ Highlight button clicked for category: ${categoryId}`);
@@ -249,9 +245,8 @@ export default function TaskPage() {
                 return;
             }
 
-            const {start, end} = position;
-
-            const newMarkup: MarkupItemIn = {start, end, category_slug: categoryId};
+            const { start, end } = position;
+            const newMarkup: MarkupItemIn = { start, end, category_slug: categoryId };
             addDebug(`✅ Adding markup: ${JSON.stringify(newMarkup)}`);
             setTextMarkup((prev) => [...prev, newMarkup]);
 
@@ -264,7 +259,6 @@ export default function TaskPage() {
         [getTextPosition, addDebug]
     );
 
-    // Применение выделений к тексту
     const renderTextWithHighlights = useMemo(() => {
         if (!taskData) return null;
 
@@ -273,7 +267,6 @@ export default function TaskPage() {
         }
 
         const sortedMarkup = [...textMarkup].sort((a, b) => a.start - b.start);
-
         const elements: React.ReactNode[] = [];
         let lastIndex = 0;
 
@@ -289,18 +282,8 @@ export default function TaskPage() {
             const characteristic = taskData.characteristics.find(
                 (c) => c.id === mark.category_slug
             );
-            const color = characteristic?.color || 'gray';
-
-            const colorClasses: Record<string, string> = {
-                blue: 'bg-blue-200 hover:bg-blue-300',
-                yellow: 'bg-yellow-200 hover:bg-yellow-300',
-                green: 'bg-green-200 hover:bg-green-300',
-                red: 'bg-red-200 hover:bg-red-300',
-                purple: 'bg-purple-200 hover:bg-purple-300',
-                pink: 'bg-pink-200 hover:bg-pink-300',
-            };
-
-            const highlightClass = colorClasses[color] || 'bg-gray-200 hover:bg-gray-300';
+            const colorKey = extractColorKey(characteristic?.color ?? '');
+            const highlightClass = COLOR_HIGHLIGHT[colorKey] ?? 'bg-gray-200 hover:bg-gray-300';
             const highlightedPart = taskData.text.slice(mark.start, mark.end);
 
             const originalIndex = textMarkup.findIndex(
@@ -343,33 +326,24 @@ export default function TaskPage() {
         return <>{elements}</>;
     }, [textMarkup, taskData]);
 
-    // Выбор вопроса (id теперь number)
     const handleQuestionSelect = (questionId: number) => {
         if (selectedQuestions.includes(questionId)) {
             const question = taskData?.questions.find((q) => q.id === questionId);
-            if (question) {
-                setChatbotAnswer(question.answer);
-            }
+            if (question) setChatbotAnswer(question.answer);
             return;
         }
 
-        if (selectedQuestions.length >= 3) {
-            return;
-        }
+        if (selectedQuestions.length >= 3) return;
 
         setSelectedQuestions((prev) => [...prev, questionId]);
         const question = taskData?.questions.find((q) => q.id === questionId);
-        if (question) {
-            setChatbotAnswer(question.answer);
-        }
+        if (question) setChatbotAnswer(question.answer);
     };
 
-    // Автоотправка при истечении времени
     const handleAutoSubmit = () => {
         handleSubmit(false);
     };
 
-    // Отправка формы
     const handleSubmit = async (manual: boolean = true) => {
         if (!taskData) return;
 
@@ -407,9 +381,7 @@ export default function TaskPage() {
 
         try {
             if (isTrainingMode) {
-                //TODO: сделать переход по id. когда на беке добавят
-                const data = await submitEducationTask.mutateAsync(submissionData);
-                // У education нет submission_id — переходим без него или используем условный id
+                await submitEducationTask.mutateAsync(submissionData);
                 router.push(`/estimation/education`);
             } else {
                 const data = await submitControlTask.mutateAsync(submissionData);
@@ -421,7 +393,6 @@ export default function TaskPage() {
         }
     };
 
-    // Состояния загрузки и ошибки
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -455,23 +426,22 @@ export default function TaskPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-            {/* Header */}
             <UiHeader/>
 
-            {/* Main Content */}
             <main className="container mx-auto px-6 py-8">
                 {/* Debug Panel */}
                 <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-6 select-none hidden">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-yellow-800">🐛 Debug Panel</h3>
                         <div className="flex items-center gap-4">
-                              <span className="text-sm">
-                                isSelecting: <span
-                                  className={`font-bold ${isSelecting ? 'text-red-600' : 'text-green-600'}`}>{isSelecting ? 'TRUE (blocked)' : 'FALSE (allowed)'}</span>
-                              </span>
+                            <span className="text-sm">
+                                isSelecting: <span className={`font-bold ${isSelecting ? 'text-red-600' : 'text-green-600'}`}>
+                                    {isSelecting ? 'TRUE (blocked)' : 'FALSE (allowed)'}
+                                </span>
+                            </span>
                             <span className="text-sm">
                                 Markup count: <span className="font-bold">{textMarkup.length}</span>
-                              </span>
+                            </span>
                             <button
                                 onClick={() => setDebugInfo([])}
                                 className="text-xs bg-yellow-200 hover:bg-yellow-300 px-2 py-1 rounded"
@@ -495,8 +465,7 @@ export default function TaskPage() {
                 {isTrainingMode && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-3">
-                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
-                                 viewBox="0 0 24 24">
+                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                       d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>
@@ -517,8 +486,8 @@ export default function TaskPage() {
                     <p className="text-xl font-bold text-blue-600">
                         Время до конца выполнения:{' '}
                         <span className={timeLeft < 60 ? 'text-red-600' : 'text-blue-600'}>
-              {formatTime(timeLeft)}
-            </span>
+                            {formatTime(timeLeft)}
+                        </span>
                     </p>
                 </div>
 
@@ -526,10 +495,7 @@ export default function TaskPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     {/* Left Column - Task Text */}
                     <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
-                        <h2 className="text-lg font-bold text-slate-800 mb-4">
-                            Условия задания
-                        </h2>
-                        {/* Условие задания (condition) */}
+                        <h2 className="text-lg font-bold text-slate-800 mb-4">Условия задания</h2>
                         {taskData.condition && (
                             <p className="text-sm text-slate-500 italic mb-3">{taskData.condition}</p>
                         )}
@@ -546,18 +512,8 @@ export default function TaskPage() {
                             }}
                             className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
                         >
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                             <span className="font-medium">Убрать все выделения</span>
                         </button>
@@ -566,25 +522,13 @@ export default function TaskPage() {
                     {/* Right Column - Highlighting Controls */}
                     <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
                         <h2 className="text-lg font-bold text-slate-800 mb-4">
-                            Выделите фрагменты текста, характеризующие соответствующие
-                            личностные качества:
+                            Выделите фрагменты текста, характеризующие соответствующие личностные качества:
                         </h2>
 
                         <div className="space-y-4">
                             {taskData.characteristics.map((characteristic) => {
-                                const colorClass =
-                                    HIGHLIGHT_COLORS[characteristic.color] || 'bg-gray-200';
-                                const buttonColorMap: Record<string, string> = {
-                                    blue: 'bg-blue-500 hover:bg-blue-600',
-                                    yellow: 'bg-yellow-500 hover:bg-yellow-600',
-                                    green: 'bg-green-500 hover:bg-green-600',
-                                    red: 'bg-red-500 hover:bg-red-600',
-                                    purple: 'bg-purple-500 hover:bg-purple-600',
-                                    pink: 'bg-pink-500 hover:bg-pink-600',
-                                };
-                                const buttonColor =
-                                    buttonColorMap[characteristic.color] ||
-                                    'bg-gray-500 hover:bg-gray-600';
+                                const colorKey = extractColorKey(characteristic.color);
+                                const buttonColor = COLOR_BUTTON[colorKey] ?? 'bg-gray-500 hover:bg-gray-600';
 
                                 return (
                                     <div key={characteristic.id} className="space-y-2">
@@ -630,18 +574,10 @@ export default function TaskPage() {
                             className="text-blue-600 cursor-help"
                             title="Чтобы снова увидеть ответ на вопрос, кликните на него в списке еще раз"
                         >
-              <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-              >
-                <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                />
-              </svg>
-            </span>
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                            </svg>
+                        </span>
                     </h2>
 
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -654,13 +590,13 @@ export default function TaskPage() {
                                     key={question.id}
                                     onClick={() => handleQuestionSelect(question.id)}
                                     disabled={isDisabled}
-                                    className={`
-                                                px-4 py-2 rounded-lg font-medium transition-all
-                                                ${isSelected ? 'bg-blue-600 text-white shadow-md'
-                                        : isDisabled
-                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                    } `}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                        isSelected
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : isDisabled
+                                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    }`}
                                 >
                                     {question.text}
                                 </button>
@@ -669,9 +605,7 @@ export default function TaskPage() {
                     </div>
 
                     <div className="mt-4">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Чат-бот
-                        </label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Чат-бот</label>
                         <textarea
                             value={chatbotAnswer}
                             readOnly
@@ -691,14 +625,11 @@ export default function TaskPage() {
                             <button
                                 key={option.id}
                                 onClick={() => setSelectedAnswer(option.id)}
-                                className={`
-                  px-6 py-4 rounded-xl font-semibold text-lg transition-all
-                  ${
+                                className={`px-6 py-4 rounded-xl font-semibold text-lg transition-all ${
                                     selectedAnswer === option.id
                                         ? 'bg-blue-600 text-white shadow-xl scale-105'
                                         : 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
-                                }
-                `}
+                                }`}
                             >
                                 {option.text}
                             </button>

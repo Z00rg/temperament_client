@@ -1,7 +1,7 @@
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {
-    categoryConfigFormRetrieve,
-    taskBankRetrieve, taskDeleteDestroy,
+    categoryConfigFormList,
+    taskBankList, taskDeleteDestroy,
     TaskFormCreate,
     tasksCreate,
     tasksRetrieve, tasksUpdateUpdate
@@ -18,7 +18,7 @@ export function useBankTaskListQuery() {
 
     return useQuery({
         queryKey: bankTasksListKey,
-        queryFn: () => taskBankRetrieve(),
+        queryFn: () => taskBankList(),
         staleTime: 5 * 60 * 1000, // 5 минут
         retry: 0,
     });
@@ -41,7 +41,7 @@ export function useTaskCategoriesQuery() {
 
     return useQuery({
         queryKey: taskCategoriesKey,
-        queryFn: () => categoryConfigFormRetrieve(),
+        queryFn: () => categoryConfigFormList(),
         staleTime: 60 * 60 * 1000, // 60 минут
         retry: 0,
     });
@@ -109,8 +109,8 @@ export function useDeleteTaskMutationQuery() {
 export function useEditTaskMutationQuery({ closeModal }: { closeModal: () => void }) {
     return useMutation ({
         mutationFn: ({id, data}: {id: number; data: TaskFormCreate}) => tasksUpdateUpdate(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries();
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: taskInfoKey(variables.id) });
             closeModal();
 
             queue.add({

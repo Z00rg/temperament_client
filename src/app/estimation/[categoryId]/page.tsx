@@ -3,13 +3,42 @@
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/shared/ui/Button';
 import { UiHeader } from '@/shared/ui/ui-header';
-import { useEstimationQuery } from '@/entities/estimation'; // путь к хуку
+import { useEstimationQuery } from '@/entities/estimation';
 import {
     MarkupItemOut,
     QuestionOut,
 } from '@/shared/api/generated';
 
-// Цвет оценки
+// ─── Цветовые маппинги (по ключу) ────────────────────────────────────────────
+
+const COLOR_HIGHLIGHT: Record<string, string> = {
+    blue:   'bg-blue-200',
+    yellow: 'bg-yellow-200',
+    green:  'bg-green-200',
+    red:    'bg-red-200',
+    purple: 'bg-purple-200',
+    pink:   'bg-pink-200',
+};
+
+const COLOR_CHIP: Record<string, string> = {
+    blue:   'bg-blue-50   border-blue-200',
+    yellow: 'bg-yellow-50 border-yellow-200',
+    green:  'bg-green-50  border-green-200',
+    red:    'bg-red-50    border-red-200',
+    purple: 'bg-purple-50 border-purple-200',
+    pink:   'bg-pink-50   border-pink-200',
+};
+
+// ─── Хелпер нормализации цвета ───────────────────────────────────────────────
+// Принимает как "blue", так и "bg-blue-200" — возвращает всегда "blue"
+
+function extractColorKey(color: string): string {
+    const match = color?.match(/bg-(\w+)-\d+/);
+    return match ? match[1] : (color ?? '');
+}
+
+// ─── Цвет оценки ─────────────────────────────────────────────────────────────
+
 function gradeColor(grade: string) {
     switch (grade) {
         case 'Отлично':           return 'text-emerald-600';
@@ -19,7 +48,8 @@ function gradeColor(grade: string) {
     }
 }
 
-// Рендер текста с выделениями (style — Tailwind-класс, например "bg-blue-200")
+// ─── Рендер текста с выделениями ─────────────────────────────────────────────
+
 function TextWithHighlights({ text, markup }: { text: string; markup: MarkupItemOut[] }) {
     if (!markup.length) return <span>{text}</span>;
 
@@ -31,8 +61,12 @@ function TextWithHighlights({ text, markup }: { text: string; markup: MarkupItem
         if (mark.start > last) {
             nodes.push(<span key={`t-${last}`}>{text.slice(last, mark.start)}</span>);
         }
+
+        const colorKey = extractColorKey(mark.style);
+        const highlightClass = COLOR_HIGHLIGHT[colorKey] ?? 'bg-gray-200';
+
         nodes.push(
-            <mark key={`m-${i}`} className={`${mark.style} px-0.5 py-0.5 rounded`}>
+            <mark key={`m-${i}`} className={`${highlightClass} px-0.5 py-0.5 rounded`}>
                 {text.slice(mark.start, mark.end)}
             </mark>
         );
@@ -46,28 +80,22 @@ function TextWithHighlights({ text, markup }: { text: string; markup: MarkupItem
     return <>{nodes}</>;
 }
 
-// Вычисляем «недостающие» вопросы: есть в correctQuestions, но нет в studentQuestions
+// ─── Недостающие вопросы ─────────────────────────────────────────────────────
+
 function missingQuestions(student: QuestionOut[], correct: QuestionOut[]): QuestionOut[] {
     const studentIds = new Set(student.map((q) => q.id));
     return correct.filter((q) => !studentIds.has(q.id));
 }
 
 // ─── Компонент страницы ───────────────────────────────────────────────────────
+
 export default function EstimationPage() {
     const router = useRouter();
     const params = useParams();
 
-    // id попытки из URL: /estimation/[id]
-    // TODO: баг - некорректный динамический параметр в ссылке
-    // 1. Берем правильное имя параметра (замените 'id', если папка называется иначе)
     const rawId = params?.categoryId;
-
     const idString = Array.isArray(rawId) ? rawId[0] : rawId;
-
-    // 2. Если idString нет, пусть будет NaN, чтобы проверка ниже отработала корректно
     const estimationId = idString ? parseInt(idString, 10) : NaN;
-
-    // 3. Проверяем, что это действительно число и оно больше нуля (id в БД обычно > 0)
     const isValidId = !isNaN(estimationId) && estimationId > 0;
 
     const useEstimation = useEstimationQuery(estimationId, isValidId);
@@ -75,8 +103,6 @@ export default function EstimationPage() {
     const isLoading = useEstimation.isPending;
     const isError = useEstimation.isError;
 
-    // ── Loading / Error ────────────────────────────────────────────────────────
-    // Измените логику отображения окон:
     if (!isValidId) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
@@ -139,7 +165,6 @@ export default function EstimationPage() {
 
                 {/* ── Тексты с разметкой ──────────────────────────────────────── */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Студент */}
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <h2 className="text-base font-bold text-slate-700">Ваш ответ</h2>
@@ -157,7 +182,6 @@ export default function EstimationPage() {
                         </div>
                     </div>
 
-                    {/* Эталон */}
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <h2 className="text-base font-bold text-slate-700">Эталон ответа</h2>
@@ -176,28 +200,18 @@ export default function EstimationPage() {
                     <h2 className="text-base font-bold text-slate-700 mb-4">Характеристики</h2>
                     <div className="space-y-3">
                         {data.characteristics.map((char, i) => {
-                            const isCorrect =
-                                char.studentCharacteristics === char.correctCharacteristics;
-
-                            // Цвет плашки под цвет разметки
-                            const chipBg: Record<string, string> = {
-                                blue:   'bg-blue-50   border-blue-200',
-                                yellow: 'bg-yellow-50 border-yellow-200',
-                                green:  'bg-green-50  border-green-200',
-                                red:    'bg-red-50    border-red-200',
-                                purple: 'bg-purple-50 border-purple-200',
-                                pink:   'bg-pink-50   border-pink-200',
-                            };
+                            const isCorrect = char.studentCharacteristics === char.correctCharacteristics;
+                            const colorKey = extractColorKey(char.color);
+                            const chipClass = COLOR_CHIP[colorKey] ?? 'bg-slate-50 border-slate-200';
 
                             return (
                                 <div
                                     key={i}
-                                    className={`flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3 ${chipBg[char.color] ?? 'bg-slate-50 border-slate-200'}`}
+                                    className={`flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3 ${chipClass}`}
                                 >
                                     <span className="font-medium text-slate-700 text-sm">{char.name}</span>
 
                                     <div className="flex items-center gap-4 text-sm">
-                                        {/* Ответ студента */}
                                         <div className="text-right">
                                             <div className="text-xs text-slate-400 mb-0.5">Ваш выбор</div>
                                             <div className={`font-semibold ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -206,7 +220,6 @@ export default function EstimationPage() {
                                             </div>
                                         </div>
 
-                                        {/* Эталон (показываем только если ошибся) */}
                                         {!isCorrect && (
                                             <>
                                                 <div className="w-px h-8 bg-slate-200" />
@@ -227,7 +240,6 @@ export default function EstimationPage() {
 
                 {/* ── Вопросы ─────────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Заданные вопросы */}
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                         <h2 className="text-base font-bold text-slate-700 mb-4">
                             Заданные вами вопросы
@@ -264,7 +276,6 @@ export default function EstimationPage() {
                         )}
                     </div>
 
-                    {/* Недостающие вопросы */}
                     {missing.length > 0 && (
                         <div className="bg-red-50 rounded-xl shadow-sm border-2 border-red-200 p-6">
                             <h2 className="text-base font-bold text-red-700 mb-4">
