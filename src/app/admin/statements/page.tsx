@@ -6,17 +6,6 @@ import { useStatementsList } from "@/features/admin/model/useStatementsList";
 
 // ─── Типы API ─────────────────────────────────────────────────────────────────
 
-interface SubmissionRow {
-    student_fio:   string;
-    group:         string;
-    last_start:    string;
-    last_end:      string;
-    last_spent:    string;
-    last_grade:    string;
-    last_category: string;
-    attempts: Attempt[];
-}
-
 interface Attempt {
     number: number;
     id: number;
@@ -63,7 +52,7 @@ export default function StatementsPage() {
     const categories = useMemo(() => {
         if (!Array.isArray(items)) return [];
         const set = new Set<string>();
-        items.forEach((item: SubmissionRow) => {
+        items.forEach((item) => {
             if (item.last_category) set.add(item.last_category);
         });
         return Array.from(set);
@@ -73,7 +62,7 @@ export default function StatementsPage() {
     const filteredRows = useMemo(() => {
         if (!Array.isArray(items)) return [];
 
-        return items.filter((row: SubmissionRow) => {
+        return items.filter((row) => {
             const matchesGroup = row.group
                 ?.toLowerCase()
                 .includes(groupFilter.toLowerCase());

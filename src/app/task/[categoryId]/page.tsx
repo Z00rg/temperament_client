@@ -523,22 +523,23 @@ export default function TaskPage() {
                     </div>
 
                     {/* Right Column - Highlighting Controls */}
-                    <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
-                        <h2 className="text-lg font-bold text-slate-800 mb-4">
+                    <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-slate-200">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-800 mb-4 leading-snug">
                             Выделите фрагменты текста, характеризующие соответствующие личностные качества:
                         </h2>
 
-                        <div className="space-y-4">
+                        <div className="space-y-5 sm:space-y-4">
                             {taskData.characteristics.map((characteristic) => {
                                 const colorKey = extractColorKey(characteristic.color);
                                 const buttonColor = COLOR_BUTTON[colorKey] ?? 'bg-gray-500 hover:bg-gray-600';
 
                                 return (
-                                    <div key={characteristic.id} className="space-y-2">
-                                        <label className="block text-sm font-medium text-slate-700">
+                                    <div key={characteristic.id} className="space-y-2 border-b border-slate-100 pb-4 last:border-0 last:pb-0 sm:border-0 sm:pb-0">
+                                        <label className="block text-xs sm:text-sm font-semibold sm:font-medium text-slate-700">
                                             {characteristic.name}
                                         </label>
-                                        <div className="flex items-center gap-4">
+                                        {/* flex-col на мобилках, flex-row (по умолчанию) от экрана sm и выше */}
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                             <select
                                                 value={selectedCharacteristics[characteristic.id] ?? ''}
                                                 onChange={(e) =>
@@ -547,7 +548,7 @@ export default function TaskPage() {
                                                         [characteristic.id]: e.target.value,
                                                     }))
                                                 }
-                                                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full sm:flex-1 px-3 py-2 sm:px-4 sm:py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                             >
                                                 {characteristic.options.map((option) => (
                                                     <option key={option.id} value={option.id}>
@@ -557,7 +558,7 @@ export default function TaskPage() {
                                             </select>
                                             <button
                                                 onClick={() => handleHighlight(characteristic.id)}
-                                                className={`${buttonColor} text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap`}
+                                                className={`${buttonColor} text-white w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-colors text-center`}
                                             >
                                                 Выделить текст
                                             </button>
@@ -570,7 +571,7 @@ export default function TaskPage() {
                 </div>
 
                 {/* Questions Section */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200 mb-6">
+                {taskData.questions.length > 0 && <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200 mb-6">
                     <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         Уточняющие вопросы (выберите не более трех):
                         <span
@@ -616,25 +617,25 @@ export default function TaskPage() {
                             placeholder="Выберите вопрос, чтобы увидеть ответ..."
                         />
                     </div>
-                </div>
+                </div>}
 
                 {/* Answer Selection */}
                 <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200 mb-6">
                     <h2 className="text-lg font-bold text-slate-800 mb-4">
                         Укажите, какой тип темперамента описан в задаче
                     </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                         {taskData.answerOptions.map((option) => (
                             <button
                                 key={option.id}
                                 onClick={() => setSelectedAnswer(option.id)}
-                                className={`px-6 py-4 rounded-xl font-semibold text-lg transition-all ${
+                                className={`px-3 py-3 sm:px-6 sm:py-4 rounded-xl font-semibold text-xs xs:text-sm sm:text-base transition-all flex items-center justify-center text-center break-words hyphens-auto min-h-[56px] ${
                                     selectedAnswer === option.id
                                         ? 'bg-blue-600 text-white shadow-xl scale-105'
                                         : 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
                                 }`}
                             >
-                                {option.text}
+                                <span className="line-clamp-3 overflow-hidden">{option.text}</span>
                             </button>
                         ))}
                     </div>

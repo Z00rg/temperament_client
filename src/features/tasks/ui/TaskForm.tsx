@@ -365,27 +365,27 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
     // ── состояние загрузки ──
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-24">
+            <div className="flex items-center justify-center py-12 sm:py-24">
                 <div className="flex flex-col items-center gap-3 text-slate-500">
                     <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
                     <span className="text-sm">
-                        {!!taskId && taskInfoQuery.isLoading ? 'Загрузка задания...' : 'Загрузка конфигурации...'}
-                    </span>
+                    {!!taskId && taskInfoQuery.isLoading ? 'Загрузка задания...' : 'Загрузка конфигурации...'}
+                </span>
                 </div>
             </div>
         );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
     return (
-        <div>
+        <div className="relative p-1 sm:p-0">
             {/* Закрыть */}
             <button
                 onClick={closeModal}
-                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors z-10"
+                className="absolute -top-2 -right-2 sm:top-4 sm:right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors z-10"
                 aria-label="Закрыть"
             >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,25 +393,24 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                 </svg>
             </button>
 
-            <h2 className="text-2xl font-bold mb-6 text-slate-800">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-slate-800 pr-8">
                 {taskId ? 'Редактирование задания' : 'Создание задания'}
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
 
                 {/* ── Секция 1: Тип и сложность ── */}
-                <div className="bg-white border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold mb-4 text-slate-800">Основная информация</h3>
-                    <div className="grid grid-cols-2 gap-4">
-
+                <div className="bg-white rounded-xl">
+                    <h3 className="text-base sm:text-lg font-semibold mb-4 text-slate-800">Основная информация</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-2 text-slate-700">
+                            <label className="block text-xs sm:text-sm font-medium mb-1.5 text-slate-700">
                                 Тип задания <span className="text-red-500">*</span>
                             </label>
                             <select
                                 value={categoryId}
                                 onChange={e => handleCategoryChange(e.target.value)}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                             >
                                 <option value="">Выберите тип</option>
                                 {categoryConfigs.map(c => (
@@ -421,13 +420,13 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2 text-slate-700">
+                            <label className="block text-xs sm:text-sm font-medium mb-1.5 text-slate-700">
                                 Сложность <span className="text-red-500">*</span>
                             </label>
                             <select
                                 value={complexity}
                                 onChange={e => setComplexity(e.target.value)}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                             >
                                 <option value="">Выберите сложность</option>
                                 {COMPLEXITIES.map(c => (
@@ -440,21 +439,21 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                     {/* Превью конфигурации категории */}
                     {selectedCategory && (
                         <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                            <p className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
+                            <p className="text-[10px] sm:text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
                                 Конфигурация категории
                             </p>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-1.5">
                                 {selectedCategory.characteristics.map(char => (
                                     <span
                                         key={char.id}
-                                        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${COLOR_BADGE[char.color] ?? 'bg-slate-100 text-slate-700'}`}
+                                        className={`inline-flex items-center px-2 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium ${COLOR_BADGE[char.color] ?? 'bg-slate-100 text-slate-700'}`}
                                     >
-                                        {char.name}
-                                    </span>
-                                ))}
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-200 text-slate-600">
-                                    {selectedCategory.answerOptions.length} вариантов ответа
+                                    {char.name}
                                 </span>
+                                ))}
+                                <span className="inline-flex items-center px-2 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium bg-slate-200 text-slate-600">
+                                {selectedCategory.answerOptions.length} ответа
+                            </span>
                             </div>
                         </div>
                     )}
@@ -462,14 +461,15 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
 
                 {/* ── Секция 2: Текст и выделения ── */}
                 {showTextSection && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold mb-4 text-slate-800">Текст и ответ</h3>
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
+                        <h3 className="text-base sm:text-lg font-semibold mb-4 text-slate-800">Текст и ответ</h3>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        {/* Разворачиваем в 1 колонку на мобилках, в 2 на lg */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                             {/* Левая колонка */}
-                            <div>
-                                <label className="block text-sm font-medium mb-2 text-slate-700">
+                            <div className="flex flex-col">
+                                <label className="block text-xs sm:text-sm font-medium mb-1.5 text-slate-700">
                                     Текст задания <span className="text-red-500">*</span>
                                 </label>
 
@@ -477,25 +477,25 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     <textarea
                                         value={taskText}
                                         onChange={e => setTaskText(e.target.value)}
-                                        className="w-full h-80 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                        placeholder="Введите текст задания..."
+                                        className="w-full h-64 sm:h-80 px-3 py-2 sm:px-4 sm:py-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                        placeholder="Введите text задания..."
                                     />
                                 ) : (
                                     <div
                                         ref={textRef}
-                                        className="w-full h-80 px-4 py-3 border border-slate-300 rounded-lg overflow-y-auto bg-slate-50 select-text cursor-text leading-relaxed"
+                                        className="w-full h-64 sm:h-80 px-3 py-2 sm:px-4 sm:py-3 text-sm border border-slate-300 rounded-lg overflow-y-auto bg-slate-50 select-text cursor-text leading-relaxed"
                                     >
                                         {renderTextWithHighlights}
                                     </div>
                                 )}
 
-                                <div className="flex gap-3 mt-3">
+                                <div className="flex flex-wrap gap-2 mt-3">
                                     {!isTextMode ? (
                                         <>
                                             <button
                                                 type="button"
                                                 onClick={() => { setIsTextMode(true); setTextMarkup([]); }}
-                                                className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -506,20 +506,20 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setTextMarkup([])}
-                                                className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
-                                                Очистить выделения
+                                                Очистить
                                             </button>
                                         </>
                                     ) : taskText && (
                                         <button
                                             type="button"
                                             onClick={() => setIsTextMode(false)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors w-full sm:w-auto justify-center"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -530,19 +530,20 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     )}
                                 </div>
 
-                                <div className="mt-6">
-                                    <label className="block text-sm font-medium mb-2 text-slate-700">
+                                <div className="mt-5">
+                                    <label className="block text-xs sm:text-sm font-medium mb-2 text-slate-700">
                                         Правильный ответ <span className="text-red-500">*</span>
                                     </label>
+                                    {/* Кнопки ответов: 2 колонки на мобилках, гибкие отступы */}
                                     <div className="grid grid-cols-2 gap-2">
                                         {formAnswerOptions.map(opt => (
                                             <button
                                                 key={opt.id}
                                                 type="button"
                                                 onClick={() => setCorrectAnswerId(opt.id)}
-                                                className={`px-4 py-2 rounded-lg font-medium border-2 transition-all text-sm
-                                                ${correctAnswerId === opt.id
-                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md scale-[1.02]'
+                                                className={`px-3 py-2.5 rounded-lg font-semibold transition-all text-xs sm:text-sm border-2 text-center break-words
+                                            ${correctAnswerId === opt.id
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md scale-[1.01]'
                                                     : 'border-blue-300 text-blue-700 hover:border-blue-500 hover:bg-blue-50'
                                                 }`}
                                             >
@@ -556,17 +557,17 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                             {/* Правая колонка — панель выделения */}
                             {showHighlightPanel && (
                                 <div>
-                                    <label className="block text-sm font-medium mb-2 text-slate-700">
+                                    <label className="block text-xs sm:text-sm font-medium mb-2 text-slate-700">
                                         Выделение характеристик
                                     </label>
 
-                                    <div className="space-y-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                                        <p className="text-sm text-slate-500">
+                                    <div className="space-y-4 bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200">
+                                        <p className="text-xs sm:text-sm text-slate-500 leading-normal">
                                             Выделите фрагменты текста слева, затем нажмите нужную кнопку:
                                         </p>
 
                                         {characteristics.map(char => (
-                                            <div key={char.id} className="flex items-center gap-3">
+                                            <div key={char.id} className="flex flex-col sm:flex-row sm:items-center gap-2 border-b border-slate-200 pb-3 sm:border-0 sm:pb-0 last:border-0 last:pb-0">
                                                 <select
                                                     value={correctCharacteristics[char.id] ?? char.options[0].id}
                                                     onChange={e =>
@@ -575,7 +576,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                                             [char.id]: e.target.value,
                                                         }))
                                                     }
-                                                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                                                    className="w-full sm:flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs sm:text-sm bg-white"
                                                 >
                                                     {char.options.map(opt => (
                                                         <option key={opt.id} value={opt.id}>{opt.name}</option>
@@ -585,7 +586,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleHighlight(char.id)}
-                                                    className={`${COLOR_BUTTON[char.color]} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap`}
+                                                    className={`${COLOR_BUTTON[char.color]} text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors w-full sm:w-auto text-center`}
                                                 >
                                                     Выделить
                                                 </button>
@@ -593,20 +594,20 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                         ))}
 
                                         <div className="border-t border-slate-300 pt-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex-1 px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg text-sm text-slate-700">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                                <div className="w-full sm:flex-1 px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-700">
                                                     Лишние данные
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleHighlight('undue')}
-                                                    className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                                                    className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors w-full sm:w-auto text-center"
                                                 >
                                                     Выделить
                                                 </button>
                                             </div>
                                             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                                <p className="text-xs text-blue-800">
+                                                <p className="text-[11px] sm:text-xs text-blue-800 leading-normal">
                                                     <strong>Внимание!</strong> Лишние данные — только в заданиях{' '}
                                                     <strong>А+Б+</strong> и <strong>А-Б+</strong>.
                                                 </p>
@@ -621,18 +622,19 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
 
                 {/* ── Секция 3: Вопросы (А-Б- и А-Б+) ── */}
                 {needsQuestions && showTextSection && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold mb-1 text-slate-800">
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
+                        <h3 className="text-base sm:text-lg font-semibold mb-1 text-slate-800">
                             Данные, которые необходимо запросить
                         </h3>
-                        <p className="text-sm text-slate-500 mb-4">
+                        <p className="text-xs sm:text-sm text-slate-500 mb-4">
                             Отметьте ровно 3 корректных — они попадут в{' '}
-                            <code className="bg-slate-100 px-1 rounded text-xs">selected_question_ids</code>.
+                            <code className="bg-slate-100 px-1 rounded text-[11px]">selected_question_ids</code>.
                         </p>
 
                         {questions.length > 0 && (
                             <div className="mb-4 rounded-lg border border-slate-200 overflow-hidden">
-                                <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-600">
+                                {/* На десктопах таблица, на мобилках скрываем заголовок */}
+                                <div className="hidden sm:grid grid-cols-12 gap-2 px-4 py-2 bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-600">
                                     <div className="col-span-1">№</div>
                                     <div className="col-span-4">Вопрос</div>
                                     <div className="col-span-5">Ответ</div>
@@ -640,17 +642,42 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     <div className="col-span-1" />
                                 </div>
 
-                                <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                                <div className="max-h-80 overflow-y-auto divide-y divide-slate-200 sm:divide-slate-100">
                                     {questions.map(q => (
+                                        /* На мобилках превращаем строку таблицы в карточку (flex-col), на десктопе возвращаем grid */
                                         <div
                                             key={q.localId}
-                                            className={`grid grid-cols-12 gap-2 px-4 py-3 transition-colors items-center
-                                                ${q.correct ? 'bg-green-50' : 'hover:bg-slate-50'}`}
+                                            className={`flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-2 px-4 py-3 transition-colors relative
+                                            ${q.correct ? 'bg-green-50/70' : 'hover:bg-slate-50'}`}
                                         >
-                                            <div className="col-span-1 font-semibold text-slate-700">{q.number}</div>
-                                            <div className="col-span-4 text-sm text-slate-700">{q.question}</div>
-                                            <div className="col-span-5 text-sm text-slate-500">{q.answer}</div>
-                                            <div className="col-span-1 text-center">
+                                            {/* Номер и чекбокс в один ряд для мобилки */}
+                                            <div className="flex items-center justify-between sm:col-span-1 border-b border-dashed border-slate-200 pb-1.5 sm:border-0 sm:pb-0">
+                                                <div className="text-xs font-bold text-slate-400 sm:text-slate-700 sm:text-sm">
+                                                    Вопрос №{q.number}
+                                                </div>
+                                                {/* Чекбокс для мобилок дублируется справа */}
+                                                <div className="sm:hidden flex items-center gap-2">
+                                                    <span className="text-xs font-medium text-slate-500">Верный:</span>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={q.correct}
+                                                        onChange={() => toggleCorrect(q.localId)}
+                                                        className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="sm:col-span-4 text-xs sm:text-sm text-slate-700">
+                                                <span className="font-semibold sm:hidden text-slate-500 text-[11px] block uppercase mb-0.5">Вопрос:</span>
+                                                {q.question}
+                                            </div>
+                                            <div className="sm:col-span-5 text-xs sm:text-sm text-slate-500">
+                                                <span className="font-semibold sm:hidden text-slate-500 text-[11px] block uppercase mb-0.5">Ответ:</span>
+                                                {q.answer}
+                                            </div>
+
+                                            {/* Десктопный чекбокс */}
+                                            <div className="hidden sm:block sm:col-span-1 text-center">
                                                 <input
                                                     type="checkbox"
                                                     checked={q.correct}
@@ -658,11 +685,13 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                                                 />
                                             </div>
-                                            <div className="col-span-1 text-right">
+
+                                            {/* Кнопка удаления */}
+                                            <div className="absolute top-2 right-2 sm:relative sm:top-0 sm:right-0 sm:col-span-1 text-right">
                                                 <button
                                                     type="button"
                                                     onClick={() => deleteQuestion(q.localId)}
-                                                    className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -675,9 +704,9 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                 </div>
 
                                 <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex items-center gap-1">
-                                    <span className={`font-semibold ${questions.filter(q => q.correct).length === 3 ? 'text-green-600' : 'text-slate-700'}`}>
-                                        {questions.filter(q => q.correct).length}
-                                    </span>
+                                <span className={`font-semibold ${questions.filter(q => q.correct).length === 3 ? 'text-green-600' : 'text-slate-700'}`}>
+                                    {questions.filter(q => q.correct).length}
+                                </span>
                                     <span>/ 3 корректных выбрано</span>
                                 </div>
                             </div>
@@ -688,7 +717,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                 <button
                                     type="button"
                                     onClick={() => setShowQuestionForm(true)}
-                                    className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-full sm:w-auto justify-center border border-dashed border-blue-200 sm:border-0"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -696,29 +725,29 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                     Новый вопрос
                                 </button>
                             ) : (
-                                <div className="space-y-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                <div className="space-y-3 p-3 sm:p-4 bg-slate-50 rounded-lg border border-slate-200">
                                     <input
                                         type="text"
                                         value={newQuestion.question}
                                         onChange={e => setNewQuestion(p => ({ ...p, question: e.target.value }))}
                                         placeholder="Введите вопрос"
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                     <input
                                         type="text"
                                         value={newQuestion.answer}
                                         onChange={e => setNewQuestion(p => ({ ...p, answer: e.target.value }))}
                                         placeholder="Введите ответ"
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 pt-1">
                                         <button type="button" onClick={addQuestion}
-                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                                className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors text-center">
                                             Сохранить
                                         </button>
                                         <button type="button"
                                                 onClick={() => { setShowQuestionForm(false); setNewQuestion({ question: '', answer: '' }); }}
-                                                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors">
+                                                className="flex-1 sm:flex-none px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs sm:text-sm font-medium rounded-lg transition-colors text-center">
                                             Отменить
                                         </button>
                                     </div>
@@ -729,18 +758,19 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                 )}
             </div>
 
-            {/* ── Кнопки ── */}
-            <div className="bg-white border-t border-slate-200 pt-6 mt-6 -mx-6 px-6">
-                <div className="flex justify-end gap-3">
+            {/* ── Кнопки управления (Футер) ── */}
+            {/* На мобилках убираем отрицательный маргин, чтобы не ломать контейнер модалки */}
+            <div className="bg-white border-t border-slate-200 pt-4 sm:pt-6 mt-6 sm:-mx-6 sm:px-6">
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
                     <Button
                         onClick={closeModal}
-                        className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium transition-colors"
+                        className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs sm:text-sm rounded-lg font-medium transition-colors text-center"
                     >
                         Отменить
                     </Button>
                     <Button
                         onClick={handleSave}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
+                        className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm rounded-lg font-medium transition-colors shadow-sm text-center"
                     >
                         {taskId ? 'Сохранить изменения' : 'Создать задание'}
                     </Button>
