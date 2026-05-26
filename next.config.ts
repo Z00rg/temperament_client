@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: 'zamenitpriprode.ru',
+                hostname: 'tips.samsmu.ru/logic-trainer/',
                 pathname: '/media/**',
             },
         ],
