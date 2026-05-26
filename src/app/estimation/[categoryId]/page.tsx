@@ -59,20 +59,37 @@ export default function EstimationPage() {
 
     // id попытки из URL: /estimation/[id]
     // TODO: баг - некорректный динамический параметр в ссылке
-    const rawId = params?.id;
+    // 1. Берем правильное имя параметра (замените 'id', если папка называется иначе)
+    const rawId = params?.categoryId;
 
     const idString = Array.isArray(rawId) ? rawId[0] : rawId;
 
-    const estimationId = idString ? parseInt(idString, 10) : 0;
+    // 2. Если idString нет, пусть будет NaN, чтобы проверка ниже отработала корректно
+    const estimationId = idString ? parseInt(idString, 10) : NaN;
 
-    const isValidId = Boolean(estimationId && !isNaN(estimationId));
+    // 3. Проверяем, что это действительно число и оно больше нуля (id в БД обычно > 0)
+    const isValidId = !isNaN(estimationId) && estimationId > 0;
 
     const useEstimation = useEstimationQuery(estimationId, isValidId);
-    const data = useEstimation?.data?.data;
+    const data = useEstimation?.data;
     const isLoading = useEstimation.isPending;
     const isError = useEstimation.isError;
 
     // ── Loading / Error ────────────────────────────────────────────────────────
+    // Измените логику отображения окон:
+    if (!isValidId) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                <div className="text-center space-y-3">
+                    <p className="text-xl text-red-500 font-semibold">Некорректный идентификатор попытки</p>
+                    <Button onPress={() => router.push('/')} className="bg-slate-600 text-white px-6 py-2 rounded-lg">
+                        На главную
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">

@@ -3,7 +3,7 @@ import {
     submissionsControlSubmitCreate,
     submissionsEducationCheckCreate,
     SubmitRequest,
-    tasksControlRandomRetrieve, tasksEducationRandomRetrieve
+    tasksControlRandomRetrieve, tasksEducationRandomList
 } from "@/shared/api/generated";
 import {queue} from "@/shared/ui/Toast";
 
@@ -56,7 +56,7 @@ export function useEducationTaskQuery() {
 
     return useQuery({
         queryKey: educationTaskKey,
-        queryFn: () => tasksEducationRandomRetrieve(),
+        queryFn: () => tasksEducationRandomList(),
         retry: 0,
         staleTime: 5 * 60 * 1000, // 5 минут
     });

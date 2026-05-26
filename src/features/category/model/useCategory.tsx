@@ -12,7 +12,7 @@ export function useCategory() {
 
     const categoryQuery = useCategoryQuery(Number(categoryId));
 
-    const item = categoryQuery.data?.data ?? null;
+    const item = categoryQuery.data ?? null;
 
     const isEmpty = !categoryQuery.isPending && !item;
 

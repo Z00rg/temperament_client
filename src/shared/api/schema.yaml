@@ -18,18 +18,20 @@ paths:
         required: true
       tags:
       - Отчёты (Admin)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AdminSubmissionDetailResponse'
+                $ref: '#/components/schemas/EvaluationResult'
           description: ''
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse41'
           description: ''
   /api/admin/submissions/all/:
     get:
@@ -37,6 +39,8 @@ paths:
       summary: 'Сводная таблица: все студенты со сданными попытками'
       tags:
       - Отчёты (Admin)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -57,12 +61,14 @@ paths:
         required: true
       tags:
       - Answer
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+                $ref: '#/components/schemas/TaskAnswerAdmin'
           description: ''
   /api/answer/{id}/delete/:
     delete:
@@ -75,12 +81,14 @@ paths:
         required: true
       tags:
       - Answer
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse9'
           description: ''
   /api/answer/{id}/update/:
     put:
@@ -105,18 +113,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskAnswerAdmin'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+                $ref: '#/components/schemas/TaskAnswerAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse31'
           description: ''
     patch:
       operationId: answer_update_partial_update
@@ -139,24 +149,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedTaskAnswerAdmin'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+                $ref: '#/components/schemas/TaskAnswerAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse32'
           description: ''
   /api/answer/all/:
     get:
       operationId: answer_all_list
       tags:
       - Answer
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -183,18 +197,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskAnswerAdmin'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAnswerAdmin'
+                $ref: '#/components/schemas/TaskAnswerAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse30'
           description: ''
   /api/auth/login/:
     post:
@@ -213,24 +229,26 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                $ref: '#/components/schemas/LoginData'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse1'
           description: ''
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse2'
           description: ''
   /api/auth/logout/:
     post:
@@ -238,13 +256,14 @@ paths:
       tags:
       - Auth
       security:
+      - cookieAuth: []
       - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LogoutResponse'
+                $ref: '#/components/schemas/LogoutData'
           description: ''
   /api/auth/refresh_token/:
     post:
@@ -289,18 +308,20 @@ paths:
             schema:
               $ref: '#/components/schemas/AdminRegistration'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkAdminRegistration'
+                $ref: '#/components/schemas/AdminRegistration'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse4'
           description: ''
   /api/auth/register/student/:
     post:
@@ -320,19 +341,20 @@ paths:
               $ref: '#/components/schemas/StudentRegistration'
         required: true
       security:
+      - cookieAuth: []
       - {}
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkStudentRegistration'
+                $ref: '#/components/schemas/StudentRegistration'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse3'
           description: ''
   /api/category-config/{id}/:
     get:
@@ -345,12 +367,14 @@ paths:
         required: true
       tags:
       - CategoryConfig
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+                $ref: '#/components/schemas/CategoryConfigCRUD'
           description: ''
   /api/category-config/{id}/delete/:
     delete:
@@ -363,12 +387,14 @@ paths:
         required: true
       tags:
       - CategoryConfig
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse2'
           description: ''
   /api/category-config/{id}/update/:
     put:
@@ -393,18 +419,20 @@ paths:
             schema:
               $ref: '#/components/schemas/CategoryConfigCRUD'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+                $ref: '#/components/schemas/CategoryConfigCRUD'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse10'
           description: ''
     patch:
       operationId: category_config_update_partial_update
@@ -427,24 +455,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedCategoryConfigCRUD'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+                $ref: '#/components/schemas/CategoryConfigCRUD'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse11'
           description: ''
   /api/category-config/all/:
     get:
       operationId: category_config_all_list
       tags:
       - CategoryConfig
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -471,32 +503,38 @@ paths:
             schema:
               $ref: '#/components/schemas/CategoryConfigCRUD'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryConfigCRUD'
+                $ref: '#/components/schemas/CategoryConfigCRUD'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse9'
           description: ''
   /api/category-config/form/:
     get:
-      operationId: category_config_form_retrieve
+      operationId: category_config_form_list
       summary: GET /api/task-categories — конфиг всех категорий для формы создания
         задачи
       tags:
       - Банк заданий (Admin)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskCategoriesResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryConfigSchema'
           description: ''
   /api/colors/{id}/:
     get:
@@ -509,12 +547,14 @@ paths:
         required: true
       tags:
       - Colors
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkColorsMarkup'
+                $ref: '#/components/schemas/ColorsMarkup'
           description: ''
   /api/colors/{id}/delete/:
     delete:
@@ -527,12 +567,14 @@ paths:
         required: true
       tags:
       - Colors
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse4'
           description: ''
   /api/colors/{id}/update/:
     put:
@@ -557,18 +599,20 @@ paths:
             schema:
               $ref: '#/components/schemas/ColorsMarkup'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkColorsMarkup'
+                $ref: '#/components/schemas/ColorsMarkup'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse16'
           description: ''
     patch:
       operationId: colors_update_partial_update
@@ -591,24 +635,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedColorsMarkup'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkColorsMarkup'
+                $ref: '#/components/schemas/ColorsMarkup'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse17'
           description: ''
   /api/colors/all/:
     get:
       operationId: colors_all_list
       tags:
       - Colors
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -635,18 +683,20 @@ paths:
             schema:
               $ref: '#/components/schemas/ColorsMarkup'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkColorsMarkup'
+                $ref: '#/components/schemas/ColorsMarkup'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse15'
           description: ''
   /api/complexity/{id}/:
     get:
@@ -659,12 +709,14 @@ paths:
         required: true
       tags:
       - Complexity
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskComplexity'
+                $ref: '#/components/schemas/TaskComplexity'
           description: ''
   /api/complexity/{id}/delete/:
     delete:
@@ -677,12 +729,14 @@ paths:
         required: true
       tags:
       - Complexity
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse3'
           description: ''
   /api/complexity/{id}/update/:
     put:
@@ -707,18 +761,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskComplexity'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskComplexity'
+                $ref: '#/components/schemas/TaskComplexity'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse13'
           description: ''
     patch:
       operationId: complexity_update_partial_update
@@ -741,24 +797,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedTaskComplexity'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskComplexity'
+                $ref: '#/components/schemas/TaskComplexity'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse14'
           description: ''
   /api/complexity/all/:
     get:
       operationId: complexity_all_list
       tags:
       - Complexity
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -785,18 +845,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskComplexity'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskComplexity'
+                $ref: '#/components/schemas/TaskComplexity'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse12'
           description: ''
   /api/markup-option/{id}/:
     get:
@@ -810,12 +872,14 @@ paths:
         required: true
       tags:
       - Варианты характеристик (MarkupOption)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkMarkupOption'
+                $ref: '#/components/schemas/MarkupOption'
           description: ''
   /api/markup-option/{id}/delete/:
     delete:
@@ -828,12 +892,14 @@ paths:
         required: true
       tags:
       - Варианты характеристик (MarkupOption)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse6'
           description: ''
   /api/markup-option/{id}/update/:
     put:
@@ -858,18 +924,20 @@ paths:
             schema:
               $ref: '#/components/schemas/MarkupOption'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkMarkupOption'
+                $ref: '#/components/schemas/MarkupOption'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse22'
           description: ''
     patch:
       operationId: markup_option_update_partial_update
@@ -892,18 +960,20 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedMarkupOption'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkMarkupOption'
+                $ref: '#/components/schemas/MarkupOption'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse23'
           description: ''
   /api/markup-option/all/:
     get:
@@ -911,6 +981,8 @@ paths:
       summary: Все варианты характеристик
       tags:
       - Варианты характеристик (MarkupOption)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -938,18 +1010,20 @@ paths:
             schema:
               $ref: '#/components/schemas/MarkupOption'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkMarkupOption'
+                $ref: '#/components/schemas/MarkupOption'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse21'
           description: ''
   /api/markup/{id}/:
     get:
@@ -962,12 +1036,14 @@ paths:
         required: true
       tags:
       - Markup
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryMarkup'
+                $ref: '#/components/schemas/CategoryMarkup'
           description: ''
   /api/markup/{id}/delete/:
     delete:
@@ -980,12 +1056,14 @@ paths:
         required: true
       tags:
       - Markup
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse5'
           description: ''
   /api/markup/{id}/update/:
     put:
@@ -1010,18 +1088,20 @@ paths:
             schema:
               $ref: '#/components/schemas/CategoryMarkup'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryMarkup'
+                $ref: '#/components/schemas/CategoryMarkup'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse19'
           description: ''
     patch:
       operationId: markup_update_partial_update
@@ -1044,24 +1124,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedCategoryMarkup'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryMarkup'
+                $ref: '#/components/schemas/CategoryMarkup'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse20'
           description: ''
   /api/markup/all/:
     get:
       operationId: markup_all_list
       tags:
       - Markup
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1088,18 +1172,20 @@ paths:
             schema:
               $ref: '#/components/schemas/CategoryMarkup'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkCategoryMarkup'
+                $ref: '#/components/schemas/CategoryMarkup'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse18'
           description: ''
   /api/profile/:
     get:
@@ -1107,12 +1193,14 @@ paths:
       summary: Профиль текущего авторизованного пользователя
       tags:
       - Профиль студента
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkUserProfile'
+                $ref: '#/components/schemas/UserProfile'
           description: ''
   /api/question/{id}/:
     get:
@@ -1125,12 +1213,14 @@ paths:
         required: true
       tags:
       - Question
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+                $ref: '#/components/schemas/TaskQuestionAdmin'
           description: ''
   /api/question/{id}/delete/:
     delete:
@@ -1143,12 +1233,14 @@ paths:
         required: true
       tags:
       - Question
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse8'
           description: ''
   /api/question/{id}/update/:
     put:
@@ -1173,18 +1265,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskQuestionAdmin'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+                $ref: '#/components/schemas/TaskQuestionAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse28'
           description: ''
     patch:
       operationId: question_update_partial_update
@@ -1207,24 +1301,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedTaskQuestionAdmin'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+                $ref: '#/components/schemas/TaskQuestionAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse29'
           description: ''
   /api/question/all/:
     get:
       operationId: question_all_list
       tags:
       - Question
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1251,18 +1349,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskQuestionAdmin'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskQuestionAdmin'
+                $ref: '#/components/schemas/TaskQuestionAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse27'
           description: ''
   /api/schema/:
     get:
@@ -1386,6 +1486,7 @@ paths:
       tags:
       - schema
       security:
+      - cookieAuth: []
       - {}
       responses:
         '200':
@@ -1418,12 +1519,14 @@ paths:
         required: true
       tags:
       - Submission
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkSubmission'
+                $ref: '#/components/schemas/Submission'
           description: ''
   /api/submission/{id}/delete/:
     delete:
@@ -1436,12 +1539,14 @@ paths:
         required: true
       tags:
       - Submission
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse10'
           description: ''
   /api/submission/{id}/update/:
     put:
@@ -1466,18 +1571,20 @@ paths:
             schema:
               $ref: '#/components/schemas/Submission'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkSubmission'
+                $ref: '#/components/schemas/Submission'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse34'
           description: ''
     patch:
       operationId: submission_update_partial_update
@@ -1500,24 +1607,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedSubmission'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkSubmission'
+                $ref: '#/components/schemas/Submission'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse35'
           description: ''
   /api/submission/all/:
     get:
       operationId: submission_all_list
       tags:
       - Submission
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1544,18 +1655,20 @@ paths:
             schema:
               $ref: '#/components/schemas/Submission'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkSubmission'
+                $ref: '#/components/schemas/Submission'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse33'
           description: ''
   /api/submissions/{id}/:
     get:
@@ -1571,24 +1684,26 @@ paths:
         required: true
       tags:
       - Контроль
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StudentSubmissionDetailResponse'
+                $ref: '#/components/schemas/EvaluationResult'
           description: ''
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse39'
           description: ''
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse40'
           description: ''
   /api/submissions/control/submit/:
     post:
@@ -1608,18 +1723,20 @@ paths:
             schema:
               $ref: '#/components/schemas/SubmitRequest'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ControlSubmitResponse'
+                $ref: '#/components/schemas/SubmitResult'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse38'
           description: ''
   /api/submissions/education/check/:
     post:
@@ -1639,45 +1756,55 @@ paths:
             schema:
               $ref: '#/components/schemas/SubmitRequest'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EducationSubmitResponse'
+                $ref: '#/components/schemas/EvaluationResult'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse36'
           description: ''
   /api/task-bank/:
     get:
-      operationId: task_bank_retrieve
+      operationId: task_bank_list
       summary: Список всех задач, сгруппированных по категориям
       tags:
       - Банк заданий (Admin)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskBankListResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskBankGroupSchema'
           description: ''
   /api/task-categories/:
     get:
-      operationId: task_categories_retrieve
+      operationId: task_categories_list
       summary: GET /api/task-categories — конфиг всех категорий для формы создания
         задачи
       tags:
       - Банк заданий (Admin)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskCategoriesResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryConfigSchema'
           description: ''
   /api/task-category/{id}/:
     get:
@@ -1690,12 +1817,14 @@ paths:
         required: true
       tags:
       - TaskCategory
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+                $ref: '#/components/schemas/TaskCategoryCRUD'
           description: ''
   /api/task-category/{id}/delete/:
     delete:
@@ -1708,12 +1837,14 @@ paths:
         required: true
       tags:
       - TaskCategory
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse1'
           description: ''
   /api/task-category/{id}/update/:
     put:
@@ -1738,18 +1869,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskCategoryCRUD'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+                $ref: '#/components/schemas/TaskCategoryCRUD'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse7'
           description: ''
     patch:
       operationId: task_category_update_partial_update
@@ -1772,24 +1905,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedTaskCategoryCRUD'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+                $ref: '#/components/schemas/TaskCategoryCRUD'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse8'
           description: ''
   /api/task-category/all/:
     get:
       operationId: task_category_all_list
       tags:
       - TaskCategory
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1816,18 +1953,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskCategoryCRUD'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskCategoryCRUD'
+                $ref: '#/components/schemas/TaskCategoryCRUD'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse6'
           description: ''
   /api/task/{id}/:
     get:
@@ -1840,12 +1979,14 @@ paths:
         required: true
       tags:
       - Task
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAdmin'
+                $ref: '#/components/schemas/TaskAdmin'
           description: ''
   /api/task/{id}/delete/:
     delete:
@@ -1858,12 +1999,14 @@ paths:
         required: true
       tags:
       - Task
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeletedResponse'
+                $ref: '#/components/schemas/DeletedResponse7'
           description: ''
   /api/task/{id}/update/:
     put:
@@ -1888,18 +2031,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskAdmin'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAdmin'
+                $ref: '#/components/schemas/TaskAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse25'
           description: ''
     patch:
       operationId: task_update_partial_update
@@ -1922,24 +2067,28 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedTaskAdmin'
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAdmin'
+                $ref: '#/components/schemas/TaskAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse26'
           description: ''
   /api/task/all/:
     get:
       operationId: task_all_list
       tags:
       - Task
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
@@ -1966,18 +2115,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskAdmin'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OkTaskAdmin'
+                $ref: '#/components/schemas/TaskAdmin'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse24'
           description: ''
   /api/tasks/:
     post:
@@ -1997,18 +2148,20 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskFormCreate'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskFormCreateResponse'
+                $ref: '#/components/schemas/TaskDetailSchema'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse43'
           description: ''
   /api/tasks/{id}/:
     get:
@@ -2022,18 +2175,20 @@ paths:
         required: true
       tags:
       - Банк заданий (Admin)
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskFormDetailResponse'
+                $ref: '#/components/schemas/TaskDetailSchema'
           description: ''
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse42'
           description: ''
   /api/tasks/{id}/update/:
     put:
@@ -2059,24 +2214,26 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskFormCreate'
         required: true
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskFormUpdateResponse'
+                $ref: '#/components/schemas/TaskDetailSchema'
           description: ''
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse44'
           description: ''
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse45'
           description: ''
   /api/tasks/control/random/:
     get:
@@ -2084,32 +2241,38 @@ paths:
       summary: Получить случайную задачу для контроля (уровень сложности 3 или 4)
       tags:
       - Контроль
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ControlTaskResponse'
+                $ref: '#/components/schemas/TaskStudentSchema'
           description: ''
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse37'
           description: ''
   /api/tasks/education/random/:
     get:
-      operationId: tasks_education_random_retrieve
+      operationId: tasks_education_random_list
       summary: Получить задачи для обучения (по одной на каждый уровень сложности
         1–4)
       tags:
       - Обучение
+      security:
+      - cookieAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EducationTasksResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskStudentSchema'
           description: ''
 components:
   schemas:
@@ -2146,16 +2309,6 @@ components:
       - password
       - password2
       - surname
-    AdminSubmissionDetailResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/EvaluationResult'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
     AnswerOptionInTask:
       type: object
       properties:
@@ -2344,26 +2497,6 @@ components:
       - id
       - name
       - style
-    ControlSubmitResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/SubmitResult'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
-    ControlTaskResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/TaskStudentSchema'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
     CookieTokenRefresh:
       type: object
       properties:
@@ -2372,55 +2505,384 @@ components:
           readOnly: true
       required:
       - access
-    DeletedData:
+    DeletedResponse1:
       type: object
       properties:
         detail:
           type: string
       required:
       - detail
-    DeletedResponse:
+    DeletedResponse10:
       type: object
       properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/DeletedData'
+        detail:
+          type: string
       required:
-      - data
-      - ok
-    EducationSubmitResponse:
+      - detail
+    DeletedResponse2:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/EvaluationResult'
-        ok:
-          type: boolean
+        detail:
+          type: string
       required:
-      - data
-      - ok
-    EducationTasksResponse:
+      - detail
+    DeletedResponse3:
       type: object
       properties:
-        ok:
-          type: boolean
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskStudentSchema'
+        detail:
+          type: string
       required:
-      - data
-      - ok
-    ErrorResponse:
+      - detail
+    DeletedResponse4:
       type: object
       properties:
-        ok:
-          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedResponse5:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedResponse6:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedResponse7:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedResponse8:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedResponse9:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    ErrorResponse1:
+      type: object
+      properties:
         error:
           type: string
       required:
       - error
-      - ok
+    ErrorResponse10:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse11:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse12:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse13:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse14:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse15:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse16:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse17:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse18:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse19:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse2:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse20:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse21:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse22:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse23:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse24:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse25:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse26:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse27:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse28:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse29:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse3:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse30:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse31:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse32:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse33:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse34:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse35:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse36:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse37:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse38:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse39:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse4:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse40:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse41:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse42:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse43:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse44:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse45:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse6:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse7:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse8:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorResponse9:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
     EvaluationResult:
       type: object
       properties:
@@ -2485,16 +2947,6 @@ components:
       required:
       - email
       - password
-    LoginResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/LoginData'
-      required:
-      - data
-      - ok
     LogoutData:
       type: object
       properties:
@@ -2502,16 +2954,6 @@ components:
           type: string
       required:
       - detail
-    LogoutResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/LogoutData'
-      required:
-      - data
-      - ok
     MarkupItemIn:
       type: object
       properties:
@@ -2573,136 +3015,6 @@ components:
       - id
       - name
       - slug
-    OkAdminRegistration:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/AdminRegistration'
-      required:
-      - data
-      - ok
-    OkCategoryConfigCRUD:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/CategoryConfigCRUD'
-      required:
-      - data
-      - ok
-    OkCategoryMarkup:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/CategoryMarkup'
-      required:
-      - data
-      - ok
-    OkColorsMarkup:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/ColorsMarkup'
-      required:
-      - data
-      - ok
-    OkMarkupOption:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/MarkupOption'
-      required:
-      - data
-      - ok
-    OkStudentRegistration:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/StudentRegistration'
-      required:
-      - data
-      - ok
-    OkSubmission:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/Submission'
-      required:
-      - data
-      - ok
-    OkTaskAdmin:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskAdmin'
-      required:
-      - data
-      - ok
-    OkTaskAnswerAdmin:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskAnswerAdmin'
-      required:
-      - data
-      - ok
-    OkTaskCategoryCRUD:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskCategoryCRUD'
-      required:
-      - data
-      - ok
-    OkTaskComplexity:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskComplexity'
-      required:
-      - data
-      - ok
-    OkTaskQuestionAdmin:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskQuestionAdmin'
-      required:
-      - data
-      - ok
-    OkUserProfile:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/UserProfile'
-      required:
-      - data
-      - ok
     PatchedCategoryConfigCRUD:
       type: object
       properties:
@@ -2987,7 +3299,10 @@ components:
           type: string
           readOnly: true
         attempts:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
       required:
       - attempts
@@ -2998,16 +3313,6 @@ components:
       - last_spent
       - last_start
       - student_fio
-    StudentSubmissionDetailResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/EvaluationResult'
-        ok:
-          type: boolean
-      required:
-      - data
-      - ok
     Submission:
       type: object
       properties:
@@ -3208,30 +3513,6 @@ components:
       - id
       - task_category
       - task_text
-    TaskBankListResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaskBankGroupSchema'
-      required:
-      - data
-      - ok
-    TaskCategoriesResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/CategoryConfigSchema'
-      required:
-      - data
-      - ok
     TaskCategoryCRUD:
       type: object
       properties:
@@ -3328,6 +3609,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/_MarkupIn'
+        answerOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/_AnswerOptionIn'
         correctAnswerId:
           type: integer
           nullable: true
@@ -3339,36 +3624,6 @@ components:
       - complexity
       - taskCategory
       - taskText
-    TaskFormCreateResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskDetailSchema'
-      required:
-      - data
-      - ok
-    TaskFormDetailResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskDetailSchema'
-      required:
-      - data
-      - ok
-    TaskFormUpdateResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        data:
-          $ref: '#/components/schemas/TaskDetailSchema'
-      required:
-      - data
-      - ok
     TaskQuestionAdmin:
       type: object
       properties:
@@ -3460,6 +3715,16 @@ components:
       - patronymic
       - role
       - surname
+    _AnswerOptionIn:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+      required:
+      - id
+      - text
     _MarkupIn:
       type: object
       properties:
@@ -3486,3 +3751,9 @@ components:
       required:
       - answer
       - question
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access
+      description: JWT токен в HttpOnly cookie

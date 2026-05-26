@@ -48,15 +48,15 @@ export default function TaskPage() {
     // Получаем задание в зависимости от режима
     const taskData: TaskStudentSchema | null = useMemo(() => {
         if (isTrainingMode) {
-            const tasks = educationTaskQuery.data?.data;
+            const tasks = educationTaskQuery.data;
             if (!tasks) return null;
             // Если указана сложность — берём задачу с нужным complexity_level, иначе первую
             if (complexity) {
-                return tasks.find(t => t.complexity_level === complexity) ?? tasks[0] ?? null;
+                return tasks.find((t: { complexity_level: number; }) => t.complexity_level === complexity) ?? tasks[0] ?? null;
             }
             return tasks[0] ?? null;
         } else {
-            return controlTaskQuery.data?.data ?? null;
+            return controlTaskQuery.data ?? null;
         }
     }, [isTrainingMode, controlTaskQuery.data, educationTaskQuery.data, complexity]);
 
@@ -413,7 +413,7 @@ export default function TaskPage() {
                 router.push(`/estimation/education`);
             } else {
                 const data = await submitControlTask.mutateAsync(submissionData);
-                const estimationId = data.data.submission_id;
+                const estimationId = data.submission_id;
                 router.push(`/estimation/${estimationId}`);
             }
         } catch (error) {

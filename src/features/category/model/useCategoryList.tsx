@@ -13,7 +13,7 @@ export function useCategoryList() {
 
     const categoryListQuery = useCategoryListQuery();
 
-    const items = categoryListQuery.data?.data ?? [];
+    const items = categoryListQuery.data ?? [];
 
     const handleItemClick = (category: CategoryConfigCRUD) => {
         setSelectedCategory(category);
