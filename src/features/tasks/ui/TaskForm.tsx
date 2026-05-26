@@ -8,6 +8,7 @@ import {
     useTaskInfoQuery,
 } from '@/entities/bank-tasks';
 import {
+    AnswerOptionSchema,
     CategoryConfigSchema,
     CharacteristicSchema, MarkupItemSchema,
     TaskFormCreate,
@@ -107,31 +108,38 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
     const isLoading = categoriesQuery.isLoading || (!!taskId && taskInfoQuery.isLoading);
 
     // ── базовые поля формы ──
+    const [formAnswerOptions, setFormAnswerOptions] = useState<AnswerOptionSchema[]>([]);
     const [categoryId,  setCategoryId]  = useState('');
     const [complexity,  setComplexity]  = useState('');
     const [taskText,    setTaskText]    = useState('');
     const [isTextMode,  setIsTextMode]  = useState(true);
     const [textMarkup,  setTextMarkup]  = useState<MarkupItemSchema[]>([]);
     const [correctCharacteristics, setCorrectCharacteristics] = useState<Record<string, string>>({});
-    const [correctAnswerId, setCorrectAnswerId] = useState<number | null>(null);
+    const [correctAnswerId, setCorrectAnswerId] = useState<number | string | null>(null);
     const [questions,        setQuestions]        = useState<QuestionDraft[]>([]);
     const [showQuestionForm, setShowQuestionForm] = useState(false);
     const [newQuestion,      setNewQuestion]      = useState({ question: '', answer: '' });
 
     const textRef = useRef<HTMLDivElement>(null);
 
+    const getCorrectId = (options: AnswerOptionSchema[]): number | undefined => options.find(opt => opt.isCorrect)?.id;
+
     // ── заполнение формы данными с сервера (режим редактирования) ──
-    // Используем ref чтобы заполнить форму ровно один раз — когда данные впервые пришли.
-    const taskInfoApplied = useRef(false);
+    // В твоем первом useEffect (режим редактирования):
     useEffect(() => {
         if (!taskInfo) return;
+
+        const correctId = getCorrectId(taskInfo.answerOptions);
 
         setCategoryId(taskInfo.taskCategory);
         setComplexity(taskInfo.complexity);
         setTaskText(taskInfo.taskText);
         setTextMarkup(taskInfo.textMarkup);
         setCorrectCharacteristics(taskInfo.correctCharacteristics);
-        setCorrectAnswerId(taskInfo.correctAnswerId);
+
+        setFormAnswerOptions(taskInfo.answerOptions);
+        setCorrectAnswerId(correctId ?? null);
+
         setQuestions(
             taskInfo.questions.map((q, i) => ({
                 localId:  q.id,
@@ -145,10 +153,14 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
         setIsTextMode(false);
     }, [taskId, taskInfo]);
 
+    // Этот эффект сработает каждый раз, когда correctAnswerId действительно изменится
+    useEffect(() => {
+        console.log('Актуальный correctAnswerId в стейте:', correctAnswerId);
+    }, [correctAnswerId]);
+
     // ── конфигурация выбранной категории ──
     const selectedCategory: CategoryConfigSchema | null = categoryConfigs.find(c => c.id === categoryId) ?? null;
     const characteristics: CharacteristicSchema[] = selectedCategory?.characteristics ?? [];
-    const answerOptions = selectedCategory?.answerOptions ?? [];
 
     // ── сброс зависимых стейтов при явной смене категории пользователем ──
     // Срабатывает на каждое изменение categoryId, но при первом применении
@@ -160,6 +172,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
         setCategoryId(id);
     };
 
+    // Во втором useEffect (где отслеживается ручная смена категории):
     useEffect(() => {
         if (!userChangedCategory.current) return;
         userChangedCategory.current = false;
@@ -168,12 +181,16 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             setCorrectCharacteristics({});
             setCorrectAnswerId(null);
             setTextMarkup([]);
+            setFormAnswerOptions([]); // Сбрасываем
             return;
         }
         setCorrectCharacteristics(buildInitialCorrectChars(selectedCategory.characteristics));
         setCorrectAnswerId(null);
         setTextMarkup([]);
-    }, [categoryId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+        // Заполняем дефолтными опциями из конфига категории
+        setFormAnswerOptions(selectedCategory.answerOptions);
+    }, [categoryId]);
 
     // ── производные флаги ──
     const needsQuestions     = complexity === '3' || complexity === '4';
@@ -321,10 +338,6 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             alert('Заполните все обязательные поля');
             return;
         }
-        if (needsQuestions && questions.filter(q => q.correct).length !== 3) {
-            alert('Выберите ровно 3 корректных вопроса');
-            return;
-        }
 
         const payload: CreateTaskPayload = {
             taskCategory: categoryId,
@@ -332,8 +345,11 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             taskText,
             correctCharacteristics,
             textMarkup,
-            correctAnswerId,
-            // Стрипаем localId/serverId/number — на сервер уходят только данные
+            // Мапим наш стейт вариантов, сохраняя оригинальные ID (хоть 1, хоть 9)
+            answerOptions: formAnswerOptions.map(opt => ({
+                ...opt,
+                isCorrect: opt.id === correctAnswerId,
+            })),
             questions: questions.map(({ question, answer, correct }) => ({ question, answer, correct })),
         };
 
@@ -342,7 +358,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
         if (!taskId) {
             useCreateTaskMutation.mutate(payload);
         } else {
-            useEditTaskMutation.mutate({id: taskId, data: payload});
+            useEditTaskMutation.mutate({ id: taskId, data: payload });
         }
     };
 
@@ -519,13 +535,13 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                         Правильный ответ <span className="text-red-500">*</span>
                                     </label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {answerOptions.map(opt => (
+                                        {formAnswerOptions.map(opt => (
                                             <button
                                                 key={opt.id}
                                                 type="button"
                                                 onClick={() => setCorrectAnswerId(opt.id)}
                                                 className={`px-4 py-2 rounded-lg font-medium border-2 transition-all text-sm
-                                                    ${correctAnswerId === opt.id
+                                                ${correctAnswerId === opt.id
                                                     ? 'bg-blue-600 border-blue-600 text-white shadow-md scale-[1.02]'
                                                     : 'border-blue-300 text-blue-700 hover:border-blue-500 hover:bg-blue-50'
                                                 }`}

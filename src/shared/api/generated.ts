@@ -57,6 +57,7 @@ export interface AnswerOptionInTask {
 export interface AnswerOptionSchema {
   id: number;
   text: string;
+  isCorrect?: boolean;
 }
 
 export interface AnswerOut {
@@ -742,6 +743,7 @@ export interface _MarkupIn {
 export interface _AnswerOptionIn {
   id: number;
   text: string;
+  isCorrect: boolean;
 }
 
 export interface _QuestionIn {

@@ -9,56 +9,58 @@ interface UiHeaderProps {
 export function UiHeader({isAdmin = false}: UiHeaderProps) {
     const useProfile = useProfileQuery();
 
-    console.log('profile data:', useProfile.data);
+    const fullName = useProfile.data
+        ? `${useProfile.data.surname} ${useProfile.data.name} ${useProfile.data.patronymic}`
+        : null;
 
     return (
         <header className="bg-white shadow-md border-b border-slate-200">
-            <div className="container mx-auto px-6 py-4">
-                <div className="flex items-center justify-between">
-                    {/* Left side - Logo and Title */}
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3">
+            <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+                <div className="flex items-center justify-between gap-3">
+
+                    {/* Left — лого + название */}
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="shrink-0">
                             <Image
                                 src="/logo.png"
                                 width={190}
                                 height={70}
                                 alt="Логотип приложения"
                                 priority
-                                style={{ height: 'auto', width: 'auto' }}
+                                style={{ height: 'auto', width: 'auto', maxWidth: '120px' }}
+                                className="sm:max-w-[190px]"
                             />
-                            <div className="flex flex-col">
-                                <h1 className="text-xl font-bold text-slate-800">
-                                    Тренажеры для обучающихся
-                                </h1>
-                                <p className="text-sm text-slate-500">
-                                    {isAdmin
-                                        ? 'Административная панель'
-                                        : 'Самарский государственный медицинский университет'}
-                                </p>
-                            </div>
+                        </div>
+                        <div className="flex flex-col min-w-0 hidden sm:flex">
+                            <h1 className="text-lg sm:text-xl font-bold text-slate-800 leading-tight">
+                                Тренажеры для обучающихся
+                            </h1>
+                            <p className="text-xs sm:text-sm text-slate-500 truncate">
+                                {isAdmin
+                                    ? 'Административная панель'
+                                    : 'Самарский государственный медицинский университет'}
+                            </p>
                         </div>
                     </div>
 
-                    {/* Right side - User Info and Logout */}
-                    <div className="flex items-center gap-6">
-                        {!useProfile.isPending && useProfile.data && (
+                    {/* Right — пользователь + кнопка выхода */}
+                    <div className="flex items-center gap-2 sm:gap-6 shrink-0">
+                        {!useProfile.isPending && fullName && (
                             <div className="flex flex-col items-end">
                                 {isAdmin ? (
-                                    <span className="font-semibold text-slate-800">
-                                        {useProfile.data.surname} {useProfile.data.name} {useProfile.data.patronymic}
+                                    <span className="font-semibold text-slate-800 text-sm sm:text-base text-right">
+                                        {fullName}
                                     </span>
                                 ) : (
                                     <>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm text-slate-600">Студент:</span>
-                                            <span className="font-semibold text-slate-800">
-                                                {useProfile.data.surname} {useProfile.data.name} {useProfile.data.patronymic}
-                                            </span>
-                                        </div>
-                                        {useProfile.data.group && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-slate-600">Группа:</span>
-                                                <span className="font-semibold text-slate-800">
+                                        {/* На мобилке — только имя, без лейблов */}
+                                        <span className="font-semibold text-slate-800 text-xs sm:text-sm text-right leading-tight">
+                                            {fullName}
+                                        </span>
+                                        {useProfile.data?.group && (
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-xs text-slate-500 hidden sm:inline">Группа:</span>
+                                                <span className="font-semibold text-slate-700 text-xs">
                                                     {useProfile.data.group}
                                                 </span>
                                             </div>
