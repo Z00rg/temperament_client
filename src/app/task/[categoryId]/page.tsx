@@ -381,7 +381,10 @@ export default function TaskPage() {
 
         try {
             if (isTrainingMode) {
-                await submitEducationTask.mutateAsync(submissionData);
+                const data = await submitEducationTask.mutateAsync(submissionData);
+                console.log('saving to localStorage:', data);
+                localStorage.setItem('educationResult', JSON.stringify(data));
+                console.log('saved:', localStorage.getItem('educationResult'));
                 router.push(`/estimation/education`);
             } else {
                 const data = await submitControlTask.mutateAsync(submissionData);
