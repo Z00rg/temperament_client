@@ -124,8 +124,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
     // Используем ref чтобы заполнить форму ровно один раз — когда данные впервые пришли.
     const taskInfoApplied = useRef(false);
     useEffect(() => {
-        if (!taskInfo || taskInfoApplied.current) return;
-        taskInfoApplied.current = true;
+        if (!taskInfo) return;
 
         setCategoryId(taskInfo.taskCategory);
         setComplexity(taskInfo.complexity);
@@ -144,7 +143,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
             }))
         );
         setIsTextMode(false);
-    }, [taskInfo]);
+    }, [taskId, taskInfo]);
 
     // ── конфигурация выбранной категории ──
     const selectedCategory: CategoryConfigSchema | null = categoryConfigs.find(c => c.id === categoryId) ?? null;
