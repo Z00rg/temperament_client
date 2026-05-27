@@ -18,7 +18,7 @@ export function getCookie(name: string): string | null {
 }
 
 export const apiInstance = axios.create({
-    baseURL: "/logic-trainer/api",
+    baseURL: "/api",
     headers: {
         "Content-Type": "application/json",
     },
