@@ -30,10 +30,10 @@ export const metadata: Metadata = {
         title: "Темперамент",
         description: "Описание темперамента",
         type: "website",
-        url: "https://zamenitpriprode.ru/",
+        url: "https://atlascolposcopy.ru/",
         images: [
             {
-                url: "https://zamenitpriprode.ru/og-atlas.png",
+                url: "https://atlascolposcopy.ru/og-atlas.png",
                 width: 1200,
                 height: 630,
                 alt: "Темперамент",

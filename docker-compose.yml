@@ -4,10 +4,10 @@ services:
     build:
       context: .
       args:
-        NEXT_PUBLIC_API_BASE_URL: https://tips.samsmu.ru/logic-trainer/api
+        NEXT_PUBLIC_API_BASE_URL: https://atlascolposcopy.ru/api
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=https://tips.samsmu.ru/logic-trainer/api
+      - NEXT_PUBLIC_API_BASE_URL=https://atlascolposcopy.ru/api
       - NODE_ENV=production
     restart: unless-stopped

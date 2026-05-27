@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-    siteUrl: 'https://tips.samsmu.ru/logic-trainer/',
+    siteUrl: 'https://atlascolposcopy.ru/',
     generateRobotsTxt: true,
     sitemapSize: 7000,
 };

@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: 'tips.samsmu.ru/logic-trainer/',
+                hostname: 'atlascolposcopy.ru//',
                 pathname: '/media/**',
             },
         ],
