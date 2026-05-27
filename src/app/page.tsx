@@ -1,7 +1,7 @@
 'use client';
 
-// import {UiHeader} from "@/shared/ui/ui-header";
-// import {CategoryList} from "@/features/category";
+import {UiHeader} from "@/shared/ui/ui-header";
+import {CategoryList} from "@/features/category";
 
 
 export default function HomePage() {
@@ -9,10 +9,9 @@ export default function HomePage() {
   return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         {/* Header */}
-        {/*<UiHeader/>*/}
+        <UiHeader/>
 
-        {/*<CategoryList/>*/}
-        <h1>Привет</h1>
+        <CategoryList/>
 
       </div>
   );
