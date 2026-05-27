@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {SignOutButton} from "@/features/auth";
 import {useProfileQuery} from "@/entities/profile";
 
@@ -21,12 +20,11 @@ export function UiHeader({isAdmin = false}: UiHeaderProps) {
                     {/* Left — лого + название */}
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div className="shrink-0">
-                            <Image
+                            <img
                                 src="/logo.png"
                                 width={190}
                                 height={70}
                                 alt="Логотип приложения"
-                                priority
                                 style={{ height: 'auto', width: 'auto', maxWidth: '120px' }}
                                 className="sm:max-w-[190px]"
                             />

@@ -1,6 +1,5 @@
 import {SignInForm} from "@/features/auth";
 import {Metadata} from "next";
-import Image from "next/image";
 
 export const metadata: Metadata = {
     title: "Авторизация",
@@ -17,7 +16,7 @@ export default function SignInPage() {
             <header
                 className="flex items-center justify-center flex-col gap-[3svh] mt-[3svh]"
             >
-                    <Image
+                    <img
                         src="/logo.png"
                         width={270}
                         height={97}
