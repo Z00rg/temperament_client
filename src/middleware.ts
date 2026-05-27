@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // 1. Конфигурация путей
-const AUTH_ROUTES = ['/logic-trainer/sign-in', '/logic-trainer/sign-up'];
-const ADMIN_ROUTE = '/logic-trainer/admin';
+const AUTH_ROUTES = ['/sign-in', '/sign-up'];
+const ADMIN_ROUTE = '/admin';
 const ACCESS_COOKIE_NAME = 'access';
 const REFRESH_COOKIE_NAME = 'refresh';
 const PERMISSION_COOKIE_NAME = 'user_role';
@@ -34,7 +34,7 @@ export default function middleware(request: NextRequest) {
         if (isAuthPath) {
             response = NextResponse.next();
         } else {
-            const signInUrl = new URL('/logic-trainer/sign-in', request.url);
+            const signInUrl = new URL('/sign-in', request.url);
             signInUrl.searchParams.set('redirect', pathname);
             response = NextResponse.redirect(signInUrl);
         }
@@ -49,7 +49,7 @@ export default function middleware(request: NextRequest) {
         // Не пускаем залогиненных на страницы логина/регистрации
         if (isAuthPath) {
             // Редирект в зависимости от роли
-            const redirectUrl = isAdmin ? ADMIN_ROUTE : '/logic-trainer';
+            const redirectUrl = isAdmin ? ADMIN_ROUTE : '/';
             response = NextResponse.redirect(new URL(redirectUrl, request.url));
         }
         // Проверка доступа для админов
@@ -61,7 +61,7 @@ export default function middleware(request: NextRequest) {
         else if (isWorker) {
             // Worker НЕ может быть на /admin-home
             if (isAdminPath) {
-                response = NextResponse.redirect(new URL('/logic-trainer', request.url));
+                response = NextResponse.redirect(new URL('/', request.url));
             } else {
                 response = NextResponse.next();
             }
@@ -69,7 +69,7 @@ export default function middleware(request: NextRequest) {
         // Если роль не определена (на всякий случай)
         else {
             // Разлогиниваем пользователя без роли
-            const signInUrl = new URL('/logic-trainer/sign-in', request.url);
+            const signInUrl = new URL('/sign-in', request.url);
             response = NextResponse.redirect(signInUrl);
             response.cookies.delete(ACCESS_COOKIE_NAME);
             response.cookies.delete(REFRESH_COOKIE_NAME);
