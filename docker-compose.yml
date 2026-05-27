@@ -4,10 +4,10 @@ services:
     build:
       context: .
       args:
-        NEXT_PUBLIC_API_BASE_URL: https://tips.samsmu.ru/logic-trainer/api
+        NEXT_PUBLIC_API_BASE_URL: http://172.26.4.9:8083/logic-trainer/api
     ports:
-      - "3000:3000"
+      - "8082:3000"
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=https://tips.samsmu.ru/logic-trainer/api
+      - NEXT_PUBLIC_API_BASE_URL=http://172.26.4.9:8083/logic-trainer/api
       - NODE_ENV=production
     restart: unless-stopped

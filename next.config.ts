@@ -12,8 +12,8 @@ const nextConfig: NextConfig = {
                 pathname: '/media/**',
             },
             {
-                protocol: 'https',
-                hostname: 'tips.samsmu.ru/logic-trainer/',
+                protocol: 'http',
+                hostname: '172.26.4.9/logic-trainer/',
                 pathname: '/media/**',
             },
         ],
