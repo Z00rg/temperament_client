@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     reactStrictMode: true,
+    trailingSlash: true,
     output: 'standalone',
     images: {
         remotePatterns: [
@@ -13,7 +14,7 @@ const nextConfig: NextConfig = {
             },
             {
                 protocol: 'http',
-                hostname: '172.26.4.9/logic-trainer/',
+                hostname: 'tips.samsmu.ru/logic-trainer',
                 pathname: '/media/**',
             },
         ],
