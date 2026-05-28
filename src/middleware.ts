@@ -49,7 +49,7 @@ export default function middleware(request: NextRequest) {
         // Не пускаем залогиненных на страницы логина/регистрации
         if (isAuthPath) {
             // Редирект в зависимости от роли
-            const redirectUrl = isAdmin ? ADMIN_ROUTE : '/logic-trainer/menu';
+            const redirectUrl = isAdmin ? ADMIN_ROUTE : '/logic-trainer';
             response = NextResponse.redirect(new URL(redirectUrl, request.url));
         }
         // Проверка доступа для админов
@@ -61,7 +61,7 @@ export default function middleware(request: NextRequest) {
         else if (isWorker) {
             // Worker НЕ может быть на /admin-home
             if (isAdminPath) {
-                response = NextResponse.redirect(new URL('/logic-trainer/menu', request.url));
+                response = NextResponse.redirect(new URL('/logic-trainer', request.url));
             } else {
                 response = NextResponse.next();
             }
