@@ -91,7 +91,7 @@ async function handleAuthFailure() {
     } finally {
         // Принудительный редирект
         if (typeof window !== 'undefined') {
-            window.location.replace("/sign-in");
+            window.location.replace("/logic-trainer/sign-in");
 
         }
     }

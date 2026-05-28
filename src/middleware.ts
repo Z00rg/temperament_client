@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 // 1. Конфигурация путей
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
-const ADMIN_ROUTE = '/admin';
+const ADMIN_ROUTE = '/admin/statements';
 const ACCESS_COOKIE_NAME = 'access';
 const REFRESH_COOKIE_NAME = 'refresh';
 const PERMISSION_COOKIE_NAME = 'user_role';
@@ -28,13 +28,18 @@ export default function middleware(request: NextRequest) {
 
     let response: NextResponse;
 
+    // Корневая страничка находиться по /menu
+    if (pathname === '/' || pathname === '') {
+        return NextResponse.redirect(new URL('/logic-trainer/menu', request.url));
+    }
+
     // --- ЛОГИКА АВТОРИЗАЦИИ ---
     if (!refreshCookie) {
         // Пользователь НЕ залогинен
         if (isAuthPath) {
             response = NextResponse.next();
         } else {
-            const signInUrl = new URL('/sign-in', request.url);
+            const signInUrl = new URL('/logic-trainer/sign-in', request.url);
             signInUrl.searchParams.set('redirect', pathname);
             response = NextResponse.redirect(signInUrl);
         }
@@ -49,7 +54,7 @@ export default function middleware(request: NextRequest) {
         // Не пускаем залогиненных на страницы логина/регистрации
         if (isAuthPath) {
             // Редирект в зависимости от роли
-            const redirectUrl = isAdmin ? ADMIN_ROUTE : '/';
+            const redirectUrl = isAdmin ? ADMIN_ROUTE : '/logic-trainer/menu';
             response = NextResponse.redirect(new URL(redirectUrl, request.url));
         }
         // Проверка доступа для админов
@@ -61,7 +66,7 @@ export default function middleware(request: NextRequest) {
         else if (isWorker) {
             // Worker НЕ может быть на /admin-home
             if (isAdminPath) {
-                response = NextResponse.redirect(new URL('/', request.url));
+                response = NextResponse.redirect(new URL('/logic-trainer/menu', request.url));
             } else {
                 response = NextResponse.next();
             }
@@ -69,7 +74,7 @@ export default function middleware(request: NextRequest) {
         // Если роль не определена (на всякий случай)
         else {
             // Разлогиниваем пользователя без роли
-            const signInUrl = new URL('/sign-in', request.url);
+            const signInUrl = new URL('/logic-trainer/sign-in', request.url);
             response = NextResponse.redirect(signInUrl);
             response.cookies.delete(ACCESS_COOKIE_NAME);
             response.cookies.delete(REFRESH_COOKIE_NAME);
@@ -87,12 +92,7 @@ export default function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        /*
-         * Исключаем все пути, которые не являются страницами:
-         * - api (запросы к бэкенду)
-         * - _next (статика и чанки Next.js)
-         * - статические файлы (картинки, шрифты и т.д.)
-         */
-        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|well-known)).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|apple-icon.png|icon-192.png|icon-512.jpg|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf)).*)',
+        '/',
     ],
 };
