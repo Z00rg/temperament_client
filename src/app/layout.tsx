@@ -22,7 +22,7 @@ export const metadata: Metadata = {
         capable: true,
     },
     icons: {
-        apple: "/apple-icon.png",
+        apple: "/logic-trainer//apple-icon.png",
     },
 
     // OpenGraph preview

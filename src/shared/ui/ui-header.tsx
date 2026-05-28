@@ -1,6 +1,5 @@
 import {SignOutButton} from "@/features/auth";
 import {useProfileQuery} from "@/entities/profile";
-import Image from "next/image";
 
 interface UiHeaderProps {
     isAdmin?: boolean;
@@ -21,8 +20,8 @@ export function UiHeader({isAdmin = false}: UiHeaderProps) {
                     {/* Left — лого + название */}
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div className="shrink-0">
-                            <Image
-                                src="/logo.png"
+                            <img
+                                src="/logic-trainer/logo.png"
                                 width={190}
                                 height={70}
                                 alt="Логотип приложения"
