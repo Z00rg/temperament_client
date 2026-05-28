@@ -28,11 +28,6 @@ export default function middleware(request: NextRequest) {
 
     let response: NextResponse;
 
-    // Корневая страничка находиться по /menu
-    if (pathname === '/' || pathname === '') {
-        return NextResponse.redirect(new URL('/logic-trainer/menu', request.url));
-    }
-
     // --- ЛОГИКА АВТОРИЗАЦИИ ---
     if (!refreshCookie) {
         // Пользователь НЕ залогинен
