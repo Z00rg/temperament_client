@@ -1,8 +1,10 @@
+'use client';
+
 import {useCategoryList} from "@/features/category/model/useCategoryList";
 import {Button} from "@/shared/ui/Button";
 
-export function CategoryList() {
-    const { items, isLoading, isError, handleClick, handleStart, selectedCategory } = useCategoryList();
+export function CategoryList({isAdmin}: {isAdmin: boolean}) {
+    const {items, isLoading, isError, handleClick, handleStart, handleAdminClick, selectedCategory} = useCategoryList();
 
     return (
         <main className="container mx-auto px-6 py-12">
@@ -30,8 +32,18 @@ export function CategoryList() {
                             </span>
                         </button>
                     ))}
+                    {isAdmin && <button
+                        onClick={() => handleAdminClick()}
+                        className={`
+                                    p-6 rounded-xl transition-all duration-200 text-center min-h-[140px] flex items-center justify-center
+                                  bg-white text-slate-800 hover:bg-blue-50 hover:shadow-lg hover:scale-102 shadow-md border border-slate-200
+                                  `}>
+                            <span className="font-semibold leading-tight">
+                              Панель администратора
+                            </span>
+                    </button>}
                 </div>
-            </div> }
+            </div>}
 
             {/* Category Description */}
             {selectedCategory?.short_description && (

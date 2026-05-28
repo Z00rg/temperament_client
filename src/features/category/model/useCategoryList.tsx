@@ -33,6 +33,9 @@ export function useCategoryList() {
         router.push(`/description/${selectedCategory.id}`);
     };
 
+    const handleAdminClick = () => {
+        router.push("/admin/statements");
+    };
 
     return {
         items,                                 // Список патологий
@@ -40,6 +43,7 @@ export function useCategoryList() {
         isError: categoryListQuery.isError,       // Ошибка загрузки
         handleClick: handleItemClick,          // Просмотр доп информации
         handleStart: handleItemStart,          // Переход на категорию задания
-        selectedCategory                       // Состояние выбранных категорий
+        selectedCategory,                       // Состояние выбранных категорий
+        handleAdminClick                        // Переход в панель администратора
     };
 }

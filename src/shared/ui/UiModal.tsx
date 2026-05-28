@@ -1,3 +1,5 @@
+'use client';
+
 import {DialogTrigger, ModalOverlayProps} from 'react-aria-components';
 import {Modal} from './Modal';
 import {Dialog} from './Dialog';

@@ -1,3 +1,5 @@
+'use client';
+
 import {SignOutButton} from "@/features/auth";
 import {useProfileQuery} from "@/entities/profile";
 
