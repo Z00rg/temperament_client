@@ -1782,10 +1782,10 @@ export const tasksUpdateUpdate = (
  * @summary Получить случайную задачу для контроля (уровень сложности 3 или 4)
  */
 export const tasksControlRandomRetrieve = (
-
+    categoryId?: number,
  options?: SecondParameter<typeof createInstance<TaskStudentSchema>>,) => {
       return createInstance<TaskStudentSchema>(
-      {url: `/tasks/control/random/`, method: 'GET'
+      {url: `/tasks/control/random/`, method: 'GET', params: categoryId ? { category_id: categoryId } : undefined,
     },
       options);
     }
@@ -1794,10 +1794,10 @@ export const tasksControlRandomRetrieve = (
  * @summary Получить задачи для обучения (по одной на каждый уровень сложности 1–4)
  */
 export const tasksEducationRandomList = (
-
+    categoryId?: number,
  options?: SecondParameter<typeof createInstance<TaskStudentSchema[]>>,) => {
       return createInstance<TaskStudentSchema[]>(
-      {url: `/tasks/education/random/`, method: 'GET'
+      {url: `/tasks/education/random/`, method: 'GET', params: categoryId ? { category_id: categoryId } : undefined,
     },
       options);
     }

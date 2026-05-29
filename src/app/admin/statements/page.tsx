@@ -230,7 +230,7 @@ export default function StatementsPage() {
                                                         {attempts.map((attempt: Attempt) => (
                                                             <a
                                                                 key={attempt.id}
-                                                                href={`/estimation/${attempt.id}`}
+                                                                href={`logic-trainer/estimation/${attempt.id}`}
                                                                 className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-semibold transition-colors"
                                                                 title={`Попытка ${attempt.number} (id: ${attempt.id})`}
                                                             >

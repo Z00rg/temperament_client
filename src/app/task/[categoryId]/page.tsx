@@ -7,6 +7,7 @@ import {UiHeader} from "@/shared/ui/ui-header";
 import {MarkupItemIn, SubmitRequest, TaskStudentSchema} from "@/shared/api/generated";
 import {useControlTaskQuery, useEducationTaskQuery} from "@/entities/task";
 import {useSubmitControlTaskMutation, useSubmitEducationTaskMutation} from "@/entities/task";
+import { useParams } from 'next/navigation';
 
 // ─── Цветовые маппинги (по ключу) ────────────────────────────────────────────
 
@@ -50,14 +51,17 @@ export default function TaskPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    const params = useParams();
+    const categoryId = params?.categoryId ? parseInt(params.categoryId as string) : undefined;
+
     const mode = searchParams.get('mode') || 'control';
     const complexityParam = searchParams.get('complexity');
     const complexity = complexityParam ? parseInt(complexityParam) : null;
 
     const isTrainingMode = mode === 'training';
 
-    const controlTaskQuery = useControlTaskQuery();
-    const educationTaskQuery = useEducationTaskQuery();
+    const controlTaskQuery = useControlTaskQuery(categoryId);
+    const educationTaskQuery = useEducationTaskQuery(categoryId);
 
     const submitEducationTask = useSubmitEducationTaskMutation();
     const submitControlTask = useSubmitControlTaskMutation();

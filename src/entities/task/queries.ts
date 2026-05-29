@@ -11,11 +11,11 @@ const controlTaskKey = ["control-task"];
 const educationTaskKey = ["education-task"];
 
 // Запрос теста для прохождения с оценкой
-export function useControlTaskQuery() {
+export function useControlTaskQuery(categoryId?: number) {
 
     return useQuery({
-        queryKey: controlTaskKey,
-        queryFn: () => tasksControlRandomRetrieve(),
+        queryKey: [...controlTaskKey, categoryId],
+        queryFn: () => tasksControlRandomRetrieve(categoryId),
         retry: 0,
         staleTime: 5 * 60 * 1000, // 5 минут
     });
@@ -52,11 +52,11 @@ export function useSubmitControlTaskMutation() {
 }
 
 // Запрос теста для прохождения без оценки
-export function useEducationTaskQuery() {
+export function useEducationTaskQuery(categoryId?: number) {
 
     return useQuery({
-        queryKey: educationTaskKey,
-        queryFn: () => tasksEducationRandomList(),
+        queryKey: [...educationTaskKey, categoryId],
+        queryFn: () => tasksEducationRandomList(categoryId),
         retry: 0,
         staleTime: 5 * 60 * 1000, // 5 минут
     });

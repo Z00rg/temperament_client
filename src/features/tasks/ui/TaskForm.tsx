@@ -478,7 +478,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                                         value={taskText}
                                         onChange={e => setTaskText(e.target.value)}
                                         className="w-full h-64 sm:h-80 px-3 py-2 sm:px-4 sm:py-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                        placeholder="Введите text задания..."
+                                        placeholder="Введите текст задания..."
                                     />
                                 ) : (
                                     <div
@@ -627,8 +627,7 @@ export function TaskForm({ taskId, closeModal, onSave }: TaskFormProps) {
                             Данные, которые необходимо запросить
                         </h3>
                         <p className="text-xs sm:text-sm text-slate-500 mb-4">
-                            Отметьте ровно 3 корректных — они попадут в{' '}
-                            <code className="bg-slate-100 px-1 rounded text-[11px]">selected_question_ids</code>.
+                            Отметьте ровно минимум один корректный вопрос.
                         </p>
 
                         {questions.length > 0 && (
