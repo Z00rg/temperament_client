@@ -352,13 +352,18 @@ export default function TaskPage() {
         if (!taskData) return;
 
         if (manual) {
-            const missingCategories = taskData.characteristics.filter(
-                (char) => !textMarkup.some((mark) => mark.category_slug === char.id)
-            );
+            // const missingCategories = taskData.characteristics.filter(
+            //     (char) => !textMarkup.some((mark) => mark.category_slug === char.id)
+            // );
+            //
+            // if (missingCategories.length > 0) {
+            //     const categoryNames = missingCategories.map((c) => c.name).join(', ');
+            //     alert(`Необходимо выделить текст по следующим критериям: ${categoryNames}`);
+            //     return;
+            // }
 
-            if (missingCategories.length > 0) {
-                const categoryNames = missingCategories.map((c) => c.name).join(', ');
-                alert(`Необходимо выделить текст по следующим критериям: ${categoryNames}`);
+            if (textMarkup.length === 0) {
+                alert('Необходимо выделить хотя бы один фрагмент текста.');
                 return;
             }
 
